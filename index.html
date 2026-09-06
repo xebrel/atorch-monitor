@@ -379,7 +379,7 @@ body{background:#061221;color:#f5f8fc}
   <header class="appHeader">
     <div class="brandBlock">
       <div class="logoMark">⚡</div>
-      <div><div class="brandName">ATORCH <span class="versionTag">V5.24.6</span></div><div class="brandSub">DT24PW Monitor</div></div>
+      <div><div class="brandName">ATORCH <span class="versionTag">V5.24.10</span></div><div class="brandSub">DT24PW Monitor</div></div>
     </div>
     <div class="btStatus"><span class="btIcon">⌁</span><span id="dot" class="btDot"></span><div><b id="statusText">Desconectado</b><small id="deviceName">DT24PW_BLE</small></div></div>
     <button class="moreBtn" onclick="alert('ATORCH Monitor V5.23\\nMonitoramento local via Web Bluetooth.')">⋮</button>
@@ -582,7 +582,11 @@ body{background:#061221;color:#f5f8fc}
       <button onclick="document.getElementById('sessionHistory').scrollIntoView({behavior:'smooth'})"><b>◷</b><span>Histórico</span></button>
       <button onclick="alert('ATORCH Monitor V5.23\\n\\nO SOC é estimado por coulomb counting e refinado com o comportamento da tensão. A autonomia de descarga usa uma tensão mínima configurável como limite conservador.\\n\\nBanco configurado: 200 Ah.')"><b>?</b><span>Ajuda</span></button>
     </nav>
-    <div class="footer">ATORCH DT24PW Monitor V5.24.6 &nbsp;|&nbsp; Monitoramento em tempo real</div>
+    <section class="card" id="socDiagCard" style="margin-top:12px;display:block">
+      <div class="cardHeader"><h2>🔎 Diagnóstico do SOC</h2><span>somente para validação</span></div>
+      <div id="socDiag" style="font:13px/1.55 monospace;color:#b8c8d9">Aguardando dados…</div>
+    </section>
+    <div class="footer">ATORCH DT24PW Monitor V5.24.10 &nbsp;|&nbsp; Monitoramento em tempo real</div>
   </main>
 </div>
 
@@ -596,6 +600,7 @@ let autoFlow='idle';
 let history=[];
 let candidateFlow='idle',candidateCount=0,seededInitialFlow=false;
 let socAnchorInitialized=false;
+let sessionCurrentInitialSoc=null;
 let socHistory=JSON.parse(localStorage.getItem('atorch_soc_history_v55')||'[]');
 let realtimeMetric='voltage';
 const SESSION_KEY='atorch_session_history_v519';
@@ -1003,36 +1008,53 @@ function updateSOC(flow){
   if(discharge)discharge.classList.toggle('active',state.mode==='discharge');
   updateBatteryVisual(pct,flow||autoFlow);
 }
+function updateSocDiagnostic(resultFlow){
+  const cap=Math.max(1,state.batteryCap);
+  const initial=sessionCurrentInitialSoc ?? state.soc;
+  const deltaFromAh=((state.chargeAh-state.dischargeAh)/cap)*100;
+  const expected=initial+deltaFromAh;
+  const diff=state.soc-expected;
+  const el=$('socDiag');
+  if(!el)return;
+  el.innerHTML='SOC inicial sessão: <b>'+initial.toFixed(1)+'%</b><br>'+
+    'Ah carga: <b>'+state.chargeAh.toFixed(3)+' Ah</b> · Ah descarga: <b>'+state.dischargeAh.toFixed(3)+' Ah</b><br>'+
+    'Variação por coulomb counting: <b>'+deltaFromAh.toFixed(2)+'%</b><br>'+
+    'SOC esperado pelos Ah: <b>'+expected.toFixed(2)+'%</b><br>'+
+    'SOC exibido: <b>'+state.soc.toFixed(2)+'%</b><br>'+
+    'Diferença: <b>'+diff.toFixed(2)+' pontos</b><br>'+
+    'Fluxo: <b>'+resultFlow+'</b>';
+}
 function updateUI(p){
   const now=Date.now(), power=p.voltage*p.current;
   const result=activeFlow(p,now);
-  if(!socAnchorInitialized){
+  if(!socAnchorInitialized && result.flow!=='idle'){
+    sessionCurrentInitialSoc=state.soc;
     if(result.flow==='charge' && state.soc>=99.9 && p.voltage<13.95) state.soc=Math.min(state.soc,chargeVoltageCeiling(p.voltage));
     socAnchorInitialized=true;saveState();
   }
   integrate(p.current,result.flow,now,p.voltage);
-  $('voltage').textContent=p.voltage.toFixed(1);
-  $('current').textContent=p.current.toFixed(3);
-  $('power').textContent=power.toFixed(1);
+  btSet('voltage',p.voltage.toFixed(1));
+  btSet('current',p.current.toFixed(3));
+  btSet('power',power.toFixed(1));
   btSet('batteryPanelCurrent',p.current.toFixed(1)+' A');btSet('batteryPanelPower',power.toFixed(0)+' W');btSet('batteryPanelVoltage',p.voltage.toFixed(1)+' V');
   btSet('skin1Current',p.current.toFixed(1)+' A');btSet('skin2Current',p.current.toFixed(1)+' A');
   btSet('skin1Power',power.toFixed(0)+' W');btSet('skin2Power',power.toFixed(0)+' W');
   btSet('skin1Voltage',p.voltage.toFixed(1)+' V');btSet('skin2Voltage',p.voltage.toFixed(1)+' V');
-  $('energy').textContent=p.energy.toFixed(2);
-  $('energyDiag').textContent=p.energy.toFixed(2);
-  $('temp').textContent=p.temperature.toFixed(0);
+  btSet('energy',p.energy.toFixed(2));
+  btSet('energyDiag',p.energy.toFixed(2));
+  btSet('temp',p.temperature.toFixed(0));
   btSet('skin1Temp',p.temperature.toFixed(0)+' °C');btSet('skin2Temp',p.temperature.toFixed(0)+' °C');
-  $('runtime').textContent=fmtTime(p.runtime);
-  $('deviceCap').textContent=p.capacity.toFixed(2);
-  $('backlight').textContent=p.backlight+' s';
-  $('unknownA').textContent=p.unknownA;
-  $('unknownB').textContent=p.unknownB;
-  $('checksum').textContent='0x'+p.checksum.toString(16).padStart(2,'0').toUpperCase();
+  btSet('runtime',fmtTime(p.runtime));
+  btSet('deviceCap',p.capacity.toFixed(2));
+  btSet('backlight',p.backlight+' s');
+  btSet('unknownA',p.unknownA);
+  btSet('unknownB',p.unknownB);
+  btSet('checksum','0x'+p.checksum.toString(16).padStart(2,'0').toUpperCase());
   $('deviceName').textContent=device?.name||'DT24PW_BLE'; if($('deviceName2'))$('deviceName2').textContent=device?.name||'DT24PW_BLE';
   btSet('lastTime',new Date(now).toLocaleTimeString('pt-BR'));
   samples.push({t:now,v:p.voltage,i:p.current,w:power});if(samples.length>240)samples.shift();
-  $('samples').textContent=samples.length;
-  renderFlow(result.flow,p.current,result.conf);updateSOC(result.flow);recordSOC(now);sessionUpdate(p,now,power);updateAutonomy(p.current,result.flow);scheduleRender();
+  btSet('samples',samples.length);
+  renderFlow(result.flow,p.current,result.conf);updateSOC(result.flow);updateSocDiagnostic(result.flow);recordSOC(now);sessionUpdate(p,now,power);updateAutonomy(p.current,result.flow);scheduleRender();
   csvRows.push({
     timestamp:new Date(now).toISOString(),voltage:p.voltage,current:p.current,power,
     energy:p.energy,temperature:p.temperature,runtime:fmtTime(p.runtime),
@@ -1040,7 +1062,7 @@ function updateUI(p){
     chargeAh:state.chargeAh,dischargeAh:state.dischargeAh,raw:p.raw
   });
   if(csvRows.length>10000)csvRows.shift();
-  $('raw').textContent=p.raw;
+  btSet('raw',p.raw);
 }
 let btLogLines=[],btPacketCount=0,btValidPacketCount=0;
 let bleNotifyEvents=0, bleReadAttempts=0, bleReadSuccess=0, bleProbeRunning=false;
@@ -1164,8 +1186,13 @@ async function readFfe1(reason='manual'){
     const a=bytesFromDataView(dv);
     btLog('READ OK | len='+a.length+' | '+hex(a));
     const p=parsePacket(a);
-    if(p)btLog('READ PACOTE VÁLIDO | V='+p.voltage.toFixed(2)+'V | I='+p.current.toFixed(3)+'A | E='+p.energy.toFixed(2)+'kWh');
-    else btLog('READ OK MAS FORMATO NÃO RECONHECIDO');
+    if(p){
+      btValidPacketCount++;
+      btSet('validPacketCount',btValidPacketCount);
+      btLog('READ PACOTE VÁLIDO | V='+p.voltage.toFixed(2)+'V | I='+p.current.toFixed(3)+'A | E='+p.energy.toFixed(2)+'kWh | T='+p.temperature+'C');
+      updateUI(p);
+      btLog('READ UI ATUALIZADA | SOC='+state.soc.toFixed(2)+'%');
+    }else btLog('READ OK MAS FORMATO NÃO RECONHECIDO');
     updateBleSummary(); return true;
   }catch(e){
     btLog('READ ERRO | name='+(e?.name||'Error')+' | message='+(e?.message||String(e)));
@@ -1269,7 +1296,7 @@ btDiagInit();
     return;
   }
   try{
-    history=[];autoFlow='idle';candidateFlow='idle';candidateCount=0;seededInitialFlow=false;confidence='—';stableIdleSince=null;lastVoltage=null;socAnchorInitialized=false;resetBleRxBuffer();
+    history=[];autoFlow='idle';candidateFlow='idle';candidateCount=0;seededInitialFlow=false;confidence='—';stableIdleSince=null;lastVoltage=null;socAnchorInitialized=false;sessionCurrentInitialSoc=null;resetBleRxBuffer();
     btPacketCount=0;btValidPacketCount=0;bleNotifyEvents=0;bleReadAttempts=0;bleReadSuccess=0;bleLastNotifyMs=null;bleLastReadMs=null;btSet('packetCount','0');btSet('validPacketCount','0');updateBleSummary();
     btLog('SOLICITANDO dispositivo BLE...');
     device=await navigator.bluetooth.requestDevice({
@@ -1309,7 +1336,20 @@ btDiagInit();
     // ausência de dados do periférico de falha do fluxo de notifications.
     await readFfe1('teste automático pós-conexão');
     bleNoDataTimer=setTimeout(()=>{
-      if(connected && bleNotifyEvents===0) btLog('ALERTA | 15 s conectados e 0 NOTIFY recebidos');
+      if(connected && bleNotifyEvents===0){
+        btLog('ALERTA | 15 s conectados e 0 NOTIFY recebidos');
+        if(!bleProbeTimer){
+          btLog('READ FALLBACK | iniciando leitura periódica da FFE1 a cada 3 s');
+          bleProbeTimer=setInterval(()=>{
+            if(!connected || bleNotifyEvents>0){
+              clearInterval(bleProbeTimer);
+              bleProbeTimer=null;
+              return;
+            }
+            if(bleReadAttempts===bleReadSuccess) readFfe1('fallback sem NOTIFY');
+          },3000);
+        }
+      }
       updateBleSummary();
     },15000);
     setStatus(true,'Conectado');
@@ -1331,6 +1371,7 @@ async function disconnect(){
   releaseWakeLock('desconexão manual');
   resetBleRxBuffer();
   if(bleNoDataTimer){clearTimeout(bleNoDataTimer);bleNoDataTimer=null}
+  if(bleProbeTimer){clearInterval(bleProbeTimer);bleProbeTimer=null}
   bleServer=null;bleService=null;bleLastNotifyMs=null;updateBleSummary();
   try{if(characteristic)await characteristic.stopNotifications();btLog('Notifications interrompidas.')}catch(e){btLog('Aviso ao parar notifications: '+(e?.message||e))}
   if(device?.gatt?.connected){device.gatt.disconnect();btLog('GATT disconnect solicitado.')}
@@ -1347,7 +1388,7 @@ function exportCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='atorch-monitor-v5.19.csv';a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-function clearSession(){samples=[];csvRows=[];history=[];autoFlow='idle';candidateFlow='idle';candidateCount=0;seededInitialFlow=false;confidence='—';lastSampleMs=null;stableIdleSince=null;socAnchorInitialized=false;$('samples').textContent='0';$('raw').textContent='Nenhum pacote recebido.';scheduleRender()}
+function clearSession(){samples=[];csvRows=[];history=[];autoFlow='idle';candidateFlow='idle';candidateCount=0;seededInitialFlow=false;confidence='—';lastSampleMs=null;stableIdleSince=null;socAnchorInitialized=false;sessionCurrentInitialSoc=null;$('samples').textContent='0';$('raw').textContent='Nenhum pacote recebido.';scheduleRender()}
 function setMode(mode){state.mode=mode;saveState();updateSOC(autoFlow);renderFlow(autoFlow,0,state.mode==='auto'?confidence:'manual')}
 function saveSettings(){
   const cap=Math.max(1,Number($('batteryInput').value)||200);
@@ -1512,7 +1553,7 @@ $('copyBtLog').onclick=async()=>{
   selectBtn.click();
   btLog('COPIAR LOG | fallback manual exibido');
 };
-btLog('APP INICIADO | V5.24.6 | SERVICE='+SERVICE+' | CHAR='+CHAR);btLog('DIAGNÓSTICO | BLE profundo: discovery + READ + notifications + heartbeat');btLog('V5.24.6 | buffer BLE + Screen Wake Lock + renderização via requestAnimationFrame');updateBleSummary();
+btLog('APP INICIADO | V5.24.10 | SERVICE='+SERVICE+' | CHAR='+CHAR);btLog('DIAGNÓSTICO | BLE profundo: discovery + READ + notifications + heartbeat');btLog('V5.24.10 | buffer BLE + Screen Wake Lock + renderização via requestAnimationFrame');updateBleSummary();
 
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible' && connected) requestWakeLock('retorno ao primeiro plano');
