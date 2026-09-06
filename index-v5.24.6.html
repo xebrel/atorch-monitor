@@ -1,0 +1,1530 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<title>ATORCH Monitor V5</title>
+<style>
+:root{
+  --bg:#07111f;--bg2:#0b1728;--card:#0e1c30;--card2:#11233a;--line:#223957;
+  --text:#f4f7fb;--muted:#8fa2bc;--cyan:#55dbea;--blue:#6d91ff;
+  --green:#46df91;--amber:#ffd06b;--red:#ff7b86;--shadow:0 18px 45px rgba(0,0,0,.22)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:
+ radial-gradient(circle at 50% -15%,#19345a 0,#0b1627 38%,#07111f 75%);
+ color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:980px;margin:auto;padding:16px 14px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:3px 2px 16px}
+.brand h1{margin:0;font-size:27px;letter-spacing:-.8px;font-weight:850}
+.brand h1 span{font-size:14px;color:#a7b7cc;margin-left:7px}
+.brand p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.status{display:flex;align-items:center;gap:8px;color:#a8b6ca;font-size:13px;white-space:nowrap}
+.dot{width:12px;height:12px;border-radius:50%;background:#65758c}
+.dot.on{background:var(--green);box-shadow:0 0 18px rgba(70,223,145,.75)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
+.btn{border:1px solid transparent;border-radius:15px;padding:14px 11px;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,#1d7093,#3858c7);box-shadow:inset 0 1px rgba(255,255,255,.08);cursor:pointer}
+.btn.secondary{background:#152943;border-color:#203a5d}
+.btn:disabled{opacity:.45}
+.card{background:linear-gradient(180deg,rgba(16,30,50,.96),rgba(9,19,34,.97));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+.hero{padding:20px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-85px;top:-90px;width:210px;height:210px;border-radius:50%;background:rgba(85,219,234,.06)}
+.heroGrid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:center}
+.eyebrow{text-transform:uppercase;letter-spacing:1.5px;font-size:12px;color:#94a7c1}
+.heroValue{font-size:64px;line-height:1;font-weight:900;letter-spacing:-2.5px;margin:10px 0 3px}
+.heroValue small{font-size:19px;color:#a9b7c9;letter-spacing:0;margin-left:5px}
+.sub{font-size:13px;color:var(--muted)}
+.flowBox{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:150px}
+.flowRing{width:122px;height:122px;border-radius:50%;display:grid;place-items:center;border:7px solid #233956;background:#0a1627;position:relative}
+.flowRing:before{content:"";position:absolute;inset:-7px;border-radius:50%;border:2px solid rgba(85,219,234,.25)}
+.flowIcon{font-size:30px}
+.flowText{font-size:15px;font-weight:850;margin-top:9px}
+.flowA{font-size:12px;color:var(--muted);margin-top:2px}
+.flowRing.charge{border-color:var(--green);box-shadow:0 0 28px rgba(70,223,145,.12)}
+.flowRing.discharge{border-color:var(--red);box-shadow:0 0 28px rgba(255,123,134,.12)}
+.flowRing.idle{border-color:#41526b}
+.section{font-size:18px;font-weight:850;margin:22px 2px 9px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.metric{padding:16px;min-height:112px}
+.metric .label{color:#93a4ba;text-transform:uppercase;letter-spacing:1.15px;font-size:11px}
+.metric .value{font-size:31px;font-weight:900;letter-spacing:-1px;margin-top:9px;font-variant-numeric:tabular-nums}
+.metric .unit{font-size:12px;color:#95a6bc;margin-top:1px}
+.metric.cyan .value{color:#8debf3}.metric.green .value{color:#83e9ae}.metric.amber .value{color:#ffda82}
+.chartCard{padding:12px 12px 8px}
+.chart{height:265px}.chart canvas{width:100%;height:100%;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:#91a2b8;font-size:11px;padding:5px 5px 0}
+.legend b{color:#eef4fb}
+.socCard{padding:20px}
+.socHead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.socTitle{font-size:15px;font-weight:800;color:#aebbd0}
+.socPct{font-size:34px;font-weight:900}
+.socTrack{height:18px;background:#08111f;border:1px solid #29405f;border-radius:10px;overflow:hidden;margin:14px 0 5px}
+.socFill{height:100%;width:0;background:linear-gradient(90deg,#ff786e,#ffd36a,#46df91);transition:width .35s}
+.batteryVisual{display:flex;flex-direction:column;align-items:center;justify-content:center;margin:18px auto 4px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.20))}
+.batteryGauge{width:190px;height:190px;position:relative;display:grid;place-items:center}
+.batteryGauge::before{content:"";position:absolute;inset:10px;border-radius:50%;background:conic-gradient(from 225deg,var(--gaugeColor,#48e09a) 0deg,var(--gaugeColor,#48e09a) var(--gauge),#263b57 var(--gauge),#263b57 270deg,transparent 270deg 360deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 11px),#000 calc(100% - 10px));mask:radial-gradient(farthest-side,transparent calc(100% - 11px),#000 calc(100% - 10px));transition:background .45s}
+.batteryGauge::after{content:"";position:absolute;inset:10px;border-radius:50%;background:conic-gradient(from 225deg,transparent 0 270deg,rgba(255,255,255,.08) 270deg 271deg,transparent 271deg);pointer-events:none}
+.gaugeCenter{position:absolute;inset:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#172941,#0a1424 68%);border:1px solid #263d59;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2}
+.gaugePct{font-size:42px;font-weight:900;letter-spacing:-1px;color:#f3f7ff;line-height:1}
+.gaugePct small{font-size:19px;margin-left:2px;color:#9eb0c8}
+.gaugeLabel{margin-top:7px;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#8ea1bb}
+.gaugeTicks{position:absolute;inset:0;color:#71839b;font-size:10px;font-weight:700}
+.gaugeTicks span{position:absolute}.g0{left:8px;bottom:35px}.g25{left:27px;top:50px}.g50{left:50%;top:0;transform:translateX(-50%)}.g75{right:27px;top:50px}.g100{right:3px;bottom:35px}
+.batteryCap{display:none}
+.batteryVisualInfo{display:flex;justify-content:center;gap:12px;align-items:center;margin-top:7px;color:#8fa2bc;font-size:11px}
+.batteryVisualInfo span:first-child{font-size:17px;font-weight:900;color:#eef6ff}
+.socHybridNote{font-size:11px;line-height:1.5;color:#7f92ad;text-align:center;margin:4px 10px 0}
+.batteryGauge.charge{--gaugeColor:#46df91}.batteryGauge.idle{--gaugeColor:#46df91}.batteryGauge.discharge{--gaugeColor:#ff5868}
+
+.scale{display:flex;justify-content:space-between;color:#667b96;font-size:10px}
+.socRows{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin-top:9px}
+.row{display:flex;justify-content:space-between;gap:8px;padding:11px 0;border-bottom:1px solid rgba(34,57,87,.7)}
+.row span:first-child{color:#91a3bb}.row strong{font-variant-numeric:tabular-nums}
+.pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:10px;background:#192b45;color:#b7c4d7;font-size:11px}
+.pill.green{background:rgba(70,223,145,.12);color:#84e8ad}.pill.red{background:rgba(255,123,134,.12);color:#ff9ea7}.pill.amber{background:rgba(255,208,107,.12);color:#ffdb86}
+.settings{padding:18px}
+.settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field label{display:block;color:#91a3bb;font-size:11px;margin-bottom:5px}
+.field input,.field select{width:100%;border:1px solid #28405f;background:#091526;color:#fff;border-radius:12px;padding:11px;font-size:15px}
+.mode{margin-top:12px;color:#92a4bc;font-size:12px}
+.modeBtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:7px}
+.modeBtns button{border:1px solid #29415f;background:#0a1728;color:#aab9cc;border-radius:12px;padding:11px 7px;font-weight:800}
+.modeBtns button.active{border-color:#55dbea;color:#dffbff;background:rgba(85,219,234,.09)}
+.settingsActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.note{margin:13px 0 0;color:#8c9eb6;font-size:12px;line-height:1.5}
+.btLogCard{padding:16px;margin-bottom:14px}.sectionHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.sectionHead h2{margin:0;font-size:17px}.sectionHead p{margin:4px 0 0;color:var(--muted);font-size:11px}.logActions{display:flex;gap:6px}.smallBtn{border:1px solid #294767;background:#0b1c30;color:#cbd8e7;border-radius:9px;padding:7px 9px;font-weight:700;font-size:10px}.btDiagGrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;margin-top:10px;border-top:1px solid var(--line)}.btDiagGrid>div{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:10px}.btDiagGrid span{color:var(--muted)}.btDiagGrid strong{color:var(--text)}.bleDiagHidden{display:none!important}.bleDiagToggle{width:100%;margin-top:10px}.bleDiagToggle.active{border-color:#38df86;color:#38df86}.btLog{font:10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#050d18;color:#b8c8da;border:1px solid #1b334e;border-radius:10px;padding:10px;margin:10px 0 0;max-height:210px;overflow:auto;white-space:pre-wrap;word-break:break-word}@media(max-width:520px){.sectionHead{align-items:flex-start}.logActions{flex-shrink:0}.smallBtn{padding:6px 7px;font-size:9px}}
+.diag{padding:18px}
+.diagGrid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.diag .row{padding:9px 0}
+.raw{font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;background:#07101d;border-radius:12px;padding:12px;margin-top:12px;color:#aebcd0;word-break:break-all;max-height:150px;overflow:auto}
+.alert{margin-top:10px;border:1px solid rgba(255,208,107,.3);background:rgba(255,208,107,.06);border-radius:13px;padding:11px;color:#d9c68f;font-size:11px;line-height:1.45}
+.footer{text-align:center;color:#60728c;font-size:11px;margin-top:22px}
+@media(max-width:760px){.metrics{grid-template-columns:1fr 1fr}.heroGrid{grid-template-columns:1fr}.flowBox{min-height:125px}.flowRing{width:105px;height:105px}.socRows{grid-template-columns:1fr}}
+@media(max-width:520px){.wrap{padding:14px 11px 38px}.brand h1{font-size:24px}.heroValue{font-size:55px}.metric{min-height:102px;padding:14px}.metric .value{font-size:28px}.chart{height:235px}.settingsGrid{grid-template-columns:1fr}.modeBtns button{font-size:12px}.settingsActions{grid-template-columns:1fr}.actions .btn{font-size:14px}}
+
+/* V5.24.4 professional dashboard */
+:root{--nav:#071425;--panel:#0b1b2f;--panel2:#0e243d;--blue2:#1588e8}
+body{background:#061221;color:#f5f8fc}
+.app{min-height:100vh;background:radial-gradient(circle at 50% -10%,#0d2a49 0,#061221 48%,#040c16 100%)}
+.appHeader{height:78px;display:flex;align-items:center;gap:14px;padding:10px 18px;background:rgba(4,15,28,.94);border-bottom:1px solid #17304b;position:sticky;top:0;z-index:20}
+.brandBlock{display:flex;align-items:center;gap:9px;margin-right:auto}
+.logoMark{width:40px;height:40px;border:1px solid #2c5277;border-radius:11px;display:grid;place-items:center;color:#20e3ff;font-size:22px;background:#0b2036}
+.brandName{font-weight:950;font-size:20px;letter-spacing:1px}.versionTag{font-size:.52em;color:var(--muted);font-weight:800;vertical-align:middle;margin-left:8px}.brandSub{font-size:10px;color:#7d93ad;margin-top:-1px}
+.btStatus{display:flex;align-items:center;gap:7px;border:1px solid #1d3b58;border-radius:12px;padding:7px 10px;background:#07192a;min-width:126px}.btIcon{color:#27a9ff;font-size:19px}.btDot{width:9px;height:9px;border-radius:50%;background:#687a90}.btDot.on{background:#2fe98b;box-shadow:0 0 10px #2fe98b}.btStatus b{font-size:10px;color:#2fe98b;display:block}.btStatus small{font-size:9px;color:#8196ad;display:block}.moreBtn{background:none;border:0;color:#c5d2e1;font-size:24px;padding:5px}
+.dashboard{max-width:1050px;margin:auto;padding:14px 14px 38px}.topControls{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:9px;margin-bottom:12px}
+.connectBtn,.ghostBtn{border-radius:12px;padding:12px 10px;font-size:12px;font-weight:850;cursor:pointer;border:1px solid #235277;color:#fff;background:linear-gradient(135deg,#1678c7,#0f9be8);box-shadow:0 7px 18px rgba(0,0,0,.18)}
+.ghostBtn{background:#0a1b2e;border-color:#203b59;color:#c9d4e2}.connectBtn:disabled{opacity:.45}
+.card{background:linear-gradient(145deg,#0b1d32,#081527);border:1px solid #1a3552;border-radius:15px;box-shadow:0 12px 30px rgba(0,0,0,.16)}
+.statusHero{display:grid;grid-template-columns:1fr 1.18fr;grid-template-rows:auto auto;gap:4px 16px;padding:16px 16px 12px;align-items:center}
+.gaugeCol{grid-row:1/3;display:grid;place-items:center}.batteryGauge{width:270px;height:270px;position:relative;display:grid;place-items:center}
+.batteryGauge::before{content:"";position:absolute;inset:13px;border-radius:50%;background:conic-gradient(from 225deg,var(--gaugeColor,#46df91) 0deg,var(--gaugeColor,#46df91) var(--gauge),#263b57 var(--gauge),#263b57 270deg,transparent 270deg 360deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 13px),#000 calc(100% - 12px));mask:radial-gradient(farthest-side,transparent calc(100% - 13px),#000 calc(100% - 12px));transition:background .45s}
+.batteryGauge::after{content:"";position:absolute;inset:13px;border-radius:50%;background:conic-gradient(from 225deg,transparent 0 270deg,rgba(255,255,255,.12) 270deg 271deg,transparent 271deg);pointer-events:none}
+.batteryGauge.charge,.batteryGauge.idle{--gaugeColor:#42e493}.batteryGauge.discharge{--gaugeColor:#ff4e5f}
+.gaugeCenter{position:absolute;inset:63px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#152941,#071321 70%);border:1px solid #29445f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;box-shadow:inset 0 0 25px rgba(0,0,0,.28)}
+.gaugePct{font-size:53px;font-weight:950;letter-spacing:-2px;line-height:1}.gaugePct small{font-size:22px;color:#9fb1c5;margin-left:2px}.gaugeLabel{margin-top:7px;font-size:11px;letter-spacing:1.4px;color:#9aabc0}.gaugeFlow{margin-top:9px;font-size:12px;font-weight:900;color:#35e590}.batteryGauge.discharge .gaugeFlow{color:#ff6674}.gaugeTicks{position:absolute;inset:0;color:#75879d;font-size:11px;font-weight:800}.gaugeTicks span{position:absolute}.g0{left:18px;bottom:44px}.g25{left:44px;top:72px}.g50{left:50%;top:4px;transform:translateX(-50%)}.g75{right:44px;top:72px}.g100{right:9px;bottom:44px}
+.instantCol{display:grid;gap:6px}.instantMetric{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;border:1px solid #17314d;border-radius:10px;padding:8px 11px;background:#091a2d;color:#93a8bf;font-size:11px}.instantMetric strong{font-size:16px;color:#f3f7fb}.ico{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-weight:900}.ico.green{color:#32ed8d}.ico.cyan{color:#2ecbff}.ico.amber{color:#ffc53e}.ico.red{color:#ff6471}.configured{display:flex;justify-content:space-between;color:#8499b1;font-size:10px;padding:3px 7px}.configured strong{color:#e9eff7;font-size:12px}
+.stateLine{grid-column:2;display:flex;justify-content:space-between;align-items:center;padding:8px 10px 0;font-size:11px;color:#8da0b7}.stateLine strong{font-size:15px;color:#3de693}.batteryGauge.discharge~*{}.miniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px}.miniCard{min-height:74px;border:1px solid #183651;border-radius:11px;background:#091a2c;padding:10px 11px;display:grid;grid-template-columns:25px 1fr;column-gap:7px;align-items:center}.miniCard small{color:#8298b0;font-size:9px}.miniCard strong{font-size:16px;line-height:1.1}.miniCard em{font-style:normal;color:#8498ae;font-size:9px}.miniIcon{grid-row:1/3;font-size:20px;color:#a4b7cb}.miniIcon.green{color:#31e58d}.miniIcon.red{color:#ff5363}.pill,.confidence{padding:4px 8px;border-radius:8px;background:#18304a;color:#aebed0;font-size:10px}.pill.green{background:rgba(48,229,141,.14);color:#58eca2}.pill.red{background:rgba(255,78,95,.14);color:#ff818d}.pill.amber{background:rgba(255,190,63,.13);color:#ffd06b}
+.historyCard,.realtimeCard,.batteryData,.settings,.diag{margin-top:12px;padding:13px}.cardHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.cardHeader h2{font-size:15px;margin:0}.cardHeader>span{font-size:9px;color:#71869e}.rangeBtns{display:flex;background:#0a1727;border-radius:8px;padding:2px}.rangeBtn{border:0;background:none;color:#8ba0b7;font-size:10px;padding:5px 9px;border-radius:6px}.rangeBtn.active{background:#1287eb;color:#fff}.socChartWrap{height:230px}.socChartWrap canvas{width:100%;height:100%;display:block}.chartLegend{display:flex;justify-content:center;gap:18px;color:#9aacbf;font-size:9px;margin:2px 0 7px}.lg{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}.lg.red{background:#ff4e5f}.lg.gray{background:#7f8ea1}.lg.green{background:#35d989}.socBar{height:7px;border-radius:8px;overflow:hidden;display:flex;background:#1c2b3e}.socBar span{height:100%}.barRed{width:22%;background:#ff4e5f}.barGray{width:7%;background:#758397}.barGreen{width:71%;background:#31df8b}.historyMeta{display:flex;justify-content:space-between;align-items:center;color:#8094ac;font-size:10px;margin-top:7px}.smallAction{border:1px solid #29415e;background:#0b1a2c;color:#9eb1c5;border-radius:7px;padding:4px 7px;font-size:9px}
+.chart{height:220px}.legend{display:flex;gap:13px;color:#879ab1;font-size:9px}.legend b{color:#e7eef7}
+.rtTabs{display:flex;gap:6px;background:#081525;border:1px solid #193450;border-radius:10px;padding:3px;margin-bottom:7px}.rtTab{flex:1;border:0;background:transparent;color:#8095ad;border-radius:7px;padding:7px 5px;font-size:10px;font-weight:800}.rtTab.active{background:#167fc7;color:#fff}.rtCurrent{font-size:10px;color:#8095ad;font-variant-numeric:tabular-nums}.rtCurrent b{color:#eef5fb;font-size:12px}.rtScale{display:flex;justify-content:space-between;color:#71849d;font-size:9px;margin:0 3px}.rtHint{font-size:9px;color:#647a95;margin-top:4px}.batteryData .dataRows{display:grid;grid-template-columns:repeat(3,1fr);gap:0 14px}.dataRows .row,.diagGrid .row{display:flex;justify-content:space-between;border-bottom:1px solid #19324d;padding:8px 0;font-size:11px}.dataRows .row span,.diag .row span{color:#8297af}.note{color:#778ca5;font-size:10px;line-height:1.5;margin-top:9px}.settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field label{display:block;color:#8499b0;font-size:10px;margin-bottom:5px}.field input{width:100%;border:1px solid #27415f;background:#071524;color:#fff;border-radius:9px;padding:10px;font-size:14px}.mode{color:#8297af;font-size:10px;margin-top:10px}.modeBtns{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:6px}.modeBtns button{border:1px solid #24405d;background:#09192b;color:#9eb1c7;border-radius:9px;padding:9px;font-weight:800}.modeBtns button.active{border-color:#20a9f1;color:#dff7ff;background:rgba(32,169,241,.09)}.settingsActions{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:7px;margin-top:8px}.diagGrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.raw{font:9px/1.45 ui-monospace,monospace;background:#06101d;border-radius:8px;padding:9px;margin-top:8px;color:#9fb0c3;word-break:break-all;max-height:110px;overflow:auto}
+.bottomNav{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:13px}.bottomNav button{min-height:70px;border:1px solid #1a3855;border-radius:10px;background:#081a2d;color:#c5d1df;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:9px}.bottomNav b{font-size:22px;font-weight:500}.footer{text-align:center;color:#61758e;font-size:9px;margin-top:15px}
+
+/* V5.23 session history */
+.sessionCard{margin-top:12px;padding:13px}.sessionCurrent{border:1px solid #193a57;background:#091a2d;border-radius:12px;padding:11px}.sessionStatus{display:flex;justify-content:space-between;align-items:center;gap:8px}.sessionStatus strong{font-size:13px}.sessionStatus span{font-size:9px;color:#7f95ad}.sessionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 14px;margin-top:5px}.sessionGrid .row{font-size:10px;padding:7px 0}.sessionGrid .row strong{font-size:11px}.sessionGap{margin-top:9px;padding:9px 10px;border:1px dashed #29415e;border-radius:9px;color:#8397ae;font-size:10px;line-height:1.4;background:#071525}.sessionList{display:grid;gap:8px;margin-top:10px}.sessionItem{border:1px solid #19324d;border-radius:11px;background:#08182a;padding:10px}.sessionItemHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.sessionItemHead strong{font-size:11px}.sessionItemHead span{font-size:9px;color:#7f94ac}.sessionItemGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 10px;margin-top:4px}.sessionItemGrid div{padding:5px 0;font-size:9px;color:#8297af}.sessionItemGrid b{color:#e9f0f7;font-size:10px;display:block;margin-top:2px}.sessionEmpty{padding:14px;text-align:center;color:#70859e;font-size:10px}.sessionActions{display:flex;justify-content:flex-end;margin-top:9px}.sessionNote{font-size:9px;color:#667c96;line-height:1.45;margin-top:8px}
+@media(max-width:620px){.appHeader{height:68px;padding:8px 12px}.brandName{font-size:18px}.btStatus{min-width:112px}.dashboard{padding:10px 10px 30px}.topControls{grid-template-columns:1fr 1fr}.statusHero{grid-template-columns:1fr;grid-template-rows:auto;gap:5px}.gaugeCol{grid-row:auto}.batteryGauge{width:240px;height:240px}.gaugeCenter{inset:56px}.instantCol{grid-template-columns:1fr 1fr}.instantMetric{grid-template-columns:24px 1fr auto;padding:7px 8px}.configured{grid-column:1/3}.stateLine{grid-column:1;padding-top:4px}.miniGrid{grid-template-columns:1fr 1fr}.batteryData .dataRows{grid-template-columns:1fr}.settingsGrid,.settingsActions{grid-template-columns:1fr}.modeBtns{grid-template-columns:1fr 1fr 1fr}.bottomNav{gap:4px}.bottomNav button{min-height:62px;font-size:8px}.bottomNav b{font-size:19px}.historyCard .cardHeader{align-items:flex-start}.rangeBtn{padding:5px 7px}}
+@media(min-width:621px){.appHeader{padding-left:24px;padding-right:24px}}
+
+
+/* V5.23 visual upgrade */
+.statusHero{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:12px 18px;padding:16px}
+.gaugeCol{grid-row:1/3}
+.batteryPanel{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:250px;border:1px solid #173651;border-radius:15px;background:radial-gradient(circle at 50% 35%,rgba(25,96,135,.18),transparent 65%),#071727;overflow:hidden;position:relative}
+.batteryPanelTitle{font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;color:#38e58d}
+.batteryArt{position:relative;width:225px;height:116px;display:flex;align-items:center;justify-content:center}
+.batteryBody{width:188px;height:82px;border:4px solid #b8c8d8;border-radius:15px;background:linear-gradient(180deg,#263b4f,#101e2c);padding:6px;box-shadow:0 0 18px rgba(38,227,142,.14),inset 0 0 15px rgba(0,0,0,.5);position:relative;overflow:hidden}
+.batteryBody:before{content:"";position:absolute;inset:4px;border-radius:9px;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 25%,rgba(0,0,0,.18));pointer-events:none;z-index:3}
+.batteryTerminal{width:11px;height:31px;border-radius:0 7px 7px 0;background:linear-gradient(180deg,#d7e0e9,#64788a);box-shadow:2px 0 6px rgba(0,0,0,.4)}
+.batteryFill{height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,#19d979,#51f49b 70%,#c7ffd9);box-shadow:0 0 18px rgba(43,238,143,.55);transition:width .6s ease,background .35s;position:relative;z-index:2}
+.batteryFill:after{content:"";position:absolute;left:4%;right:4%;top:7px;height:10px;border-radius:8px;background:rgba(255,255,255,.22);filter:blur(2px)}
+.batteryArt.discharge .batteryFill{background:linear-gradient(90deg,#ff465b,#ff7a86);box-shadow:0 0 18px rgba(255,76,94,.45)}
+.batteryArt.idle .batteryFill{background:linear-gradient(90deg,#32c7df,#6be4ef);box-shadow:0 0 18px rgba(75,218,235,.3)}
+.batteryArtPct{position:absolute;z-index:5;inset:0;display:grid;place-items:center;font-size:22px;font-weight:950;text-shadow:0 2px 7px #000}
+.flowArrows{position:absolute;left:-1px;top:27px;display:flex;flex-direction:column;gap:2px;font-size:22px;font-weight:950;color:#37ed91;text-shadow:0 0 10px currentColor;opacity:0}
+.flowArrows span{display:block;animation:flowArrow 1.1s infinite ease-in-out}
+.flowArrows span:nth-child(2){animation-delay:.25s}.flowArrows span:nth-child(3){animation-delay:.5s}
+.batteryArt.discharge .flowArrows{color:#ff5869;left:auto;right:-1px;transform:rotate(180deg)}
+.batteryArt.charge .flowArrows{opacity:1}
+.batteryArt.discharge .flowArrows{opacity:1}
+@keyframes flowArrow{0%{transform:translateX(-5px);opacity:.15}45%{opacity:1}100%{transform:translateX(9px);opacity:.05}}
+.batteryPanelMeta{display:flex;gap:16px;color:#8da3ba;font-size:10px;margin-top:3px}.batteryPanelMeta strong{font-size:13px;color:#eef6ff}
+.estimateGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}.estimateCard{min-height:98px;border:1px solid #183651;border-radius:12px;background:#091a2c;padding:12px 13px;display:grid;grid-template-columns:28px 1fr;column-gap:9px;align-items:center}.estimateIcon{grid-row:1/3;font-size:24px;color:#2fc8ff}.estimateTitle{color:#849ab1;font-size:10px;line-height:1.2}.estimateValue{font-size:21px;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums}.estimateHint{grid-column:2;color:#71869e;font-size:9px;line-height:1.3;margin-top:-2px}.estimateBar{grid-column:2;height:5px;background:#1a2b40;border-radius:5px;overflow:hidden;margin-top:2px}.estimateBar span{display:block;height:100%;width:0;background:#31df8b;border-radius:5px;transition:width .4s}.estimateCard.discharge .estimateIcon{color:#ff5d6d}.estimateCard.discharge .estimateBar span{background:#ff5969}.estimateCard.charge .estimateIcon{color:#32e391}
+@media(max-width:620px){.statusHero{grid-template-columns:1fr;grid-template-rows:auto;gap:9px}.gaugeCol{grid-row:auto}.batteryPanel{min-height:215px}.batteryArt{transform:scale(.9);margin:-5px 0}.instantCol{grid-row:auto}.stateLine{grid-column:1}.estimateGrid{grid-template-columns:1fr 1fr}.estimateCard{min-height:108px;padding:10px}.estimateValue{font-size:19px}.estimateHint{font-size:8.5px}}
+@media(max-width:420px){.estimateGrid{grid-template-columns:1fr}.batteryPanel{min-height:205px}.batteryArt{transform:scale(.84)}}
+
+
+/* V5.23 layout refinements */
+.estimateCard{grid-template-columns:30px minmax(0,1fr);align-content:center;row-gap:5px}
+.estimateTitle{font-size:11px;font-weight:700;min-width:0}
+.estimateHint{font-size:9.5px;line-height:1.35;min-width:0;overflow-wrap:anywhere}
+.estimateValue{font-size:22px}
+
+@media (orientation:landscape) and (min-width:621px){
+  .appHeader{height:64px;padding:8px 18px}
+  .dashboard{max-width:1200px;padding:10px 14px 28px}
+  .topControls{grid-template-columns:1.2fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+  .statusHero{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:10px 14px;padding:14px}
+  .gaugeCol{grid-row:1/3}
+  .batteryGauge{width:min(34vw,250px);height:min(34vw,250px)}
+  .gaugeCenter{inset:58px}
+  .batteryPanel{min-height:225px}
+  .batteryArt{transform:scale(.95)}
+  .instantCol{gap:5px}
+  .instantMetric{padding:7px 9px}
+  .miniGrid{grid-template-columns:repeat(4,1fr);gap:8px}
+  .miniCard{min-height:68px;padding:9px}
+  .estimateGrid{grid-template-columns:1fr 1fr;gap:8px}
+  .estimateCard{min-height:104px;padding:10px 12px}
+  .historyCard,.sessionCard,.realtimeCard,.batteryData,.settings,.diag{margin-top:10px}
+  .socChartWrap{height:190px}
+  .chart{height:190px}
+  .sessionGrid{grid-template-columns:repeat(4,1fr)}
+  .bottomNav button{min-height:58px}
+}
+
+@media (orientation:landscape) and (max-width:900px) and (max-height:600px){
+  .brandName{font-size:18px}
+  .brandSub{font-size:9px}
+  .logoMark{width:36px;height:36px}
+  .btStatus{min-width:112px;padding:6px 9px}
+  .heroValue{font-size:48px}
+  .batteryPanelTitle{font-size:14px}
+  .estimateHint{font-size:9px}
+  .estimateValue{font-size:20px}
+  .bottomNav{position:sticky;bottom:0;z-index:15;padding-top:6px;background:linear-gradient(180deg,transparent,#07111f 28%)}
+}
+
+@media (max-width:420px){
+  .estimateGrid{grid-template-columns:1fr 1fr}
+  .estimateCard{min-height:116px;padding:10px 9px;grid-template-columns:24px minmax(0,1fr);column-gap:7px}
+  .estimateTitle{font-size:10px}
+  .estimateHint{font-size:8.5px}
+}
+
+
+/* V5.24.4 — painel principal com skins alternáveis; BLE/parser/SOC preservados */
+.statusHero{
+  display:block;
+  padding:14px;
+  position:relative;
+  overflow:hidden;
+}
+.skinViewport{
+  position:relative;
+  width:100%;
+  min-height:360px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.skin{
+  display:none;
+  width:100%;
+  min-height:360px;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  padding:10px 12px 8px;
+  border:1px solid #173651;
+  border-radius:15px;
+  background:radial-gradient(circle at 50% 30%,rgba(25,96,135,.10),transparent 65%),#071727;
+  transition:opacity .18s ease,transform .18s ease;
+}
+.skin.active{display:grid;grid-template-columns:minmax(270px,.9fr) minmax(300px,1.1fr)}
+.skin.isLeaving{opacity:0;transform:scale(.985)}
+.skin.isEntering{opacity:1;transform:scale(1)}
+.skinVisual{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+.skinInfo{width:100%;max-width:480px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.skinState{
+  grid-column:1/-1;
+  text-align:center;
+  font-size:15px;font-weight:900;letter-spacing:.6px;
+  color:#38e58d;
+  margin-bottom:1px;
+}
+.skin.discharge .skinState{color:#ff6674}
+.skinHint{
+  position:absolute;right:10px;bottom:7px;
+  color:#5f7690;font-size:9px;letter-spacing:.2px;
+  pointer-events:none;
+}
+.skinMetric{
+  min-height:58px;
+  border:1px solid #17314d;border-radius:10px;
+  padding:8px 10px;background:#091a2d;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.skinMetric span{color:#8298b0;font-size:10px}
+.skinMetric strong{font-size:15px;color:#f3f7fb;font-variant-numeric:tabular-nums;white-space:nowrap}
+.skinMetric.wide{grid-column:1/-1}
+.skinMetric .metricIcon{font-size:17px;font-weight:900;margin-right:auto}
+.skinMetric.voltage .metricIcon{color:#32ed8d}
+.skinMetric.current .metricIcon{color:#2ecbff}
+.skinMetric.power .metricIcon{color:#ffc53e}
+.skinMetric.temp .metricIcon{color:#ff6471}
+.skinMeta{grid-column:1/-1;display:flex;justify-content:space-between;gap:14px;color:#8499b1;font-size:10px;padding:1px 3px 0}
+.skinMeta strong{color:#e9eff7;font-size:12px}
+
+/* Gauge skin */
+.skinGauge .batteryGauge{width:280px;height:280px}
+.skinGauge .gaugeCenter{inset:65px}
+.skinGauge .gaugePct{font-size:55px}
+.skinGauge .gaugeTicks{font-size:11px}
+.skinGauge .g0{left:19px;bottom:45px}.skinGauge .g25{left:45px;top:73px}.skinGauge .g50{top:4px}.skinGauge .g75{right:45px;top:73px}.skinGauge .g100{right:9px;bottom:45px}
+.skinGauge .gaugeFlow{font-size:12px}
+
+/* Battery skin */
+.skinBattery .batteryPanel{
+  width:100%;max-width:420px;min-height:250px;
+  border:0;background:transparent;border-radius:0;
+}
+.skinBattery .batteryPanelTitle{font-size:16px;margin-bottom:8px}
+.skinBattery .batteryArt{transform:scale(1.08);margin:5px 0 13px}
+.skinBattery .batteryPanelMeta{gap:20px}
+.skinBattery .batteryPanelMeta strong{font-size:14px}
+
+@media (orientation:landscape) and (min-width:621px){
+  .statusHero{padding:10px}
+  .skinViewport,.skin{min-height:300px}
+  .skin{gap:14px;padding:6px 12px}
+  .skin.active{grid-template-columns:minmax(300px,.95fr) minmax(360px,1.05fr)}
+  .skinGauge .batteryGauge{width:min(34vw,245px);height:min(34vw,245px)}
+  .skinGauge .gaugeCenter{inset:57px}
+  .skinGauge .gaugePct{font-size:48px}
+  .skinBattery .batteryPanel{min-height:235px}
+  .skinBattery .batteryArt{transform:scale(.95);margin:0 0 8px}
+  .skinInfo{max-width:560px;gap:6px}
+  .skinMetric{min-height:50px;padding:7px 9px}
+  .skinMetric strong{font-size:14px}
+  .skinState{font-size:14px}
+}
+
+@media (orientation:landscape) and (min-width:621px) and (max-height:600px){
+  .skinViewport,.skin{min-height:270px}
+  .skinGauge .batteryGauge{width:min(30vw,220px);height:min(30vw,220px)}
+  .skinGauge .gaugeCenter{inset:51px}
+  .skinGauge .gaugePct{font-size:43px}
+  .skinMetric{min-height:44px;padding:6px 8px}
+  .skinMetric span{font-size:9px}.skinMetric strong{font-size:13px}
+  .skinMeta{font-size:9px}.skinMeta strong{font-size:11px}
+  .skinBattery .batteryPanel{min-height:215px}
+  .skinBattery .batteryArt{transform:scale(.82);margin:-8px 0 0}
+  .skinBattery .batteryPanelTitle{font-size:14px}
+}
+
+@media(max-width:620px){
+  .statusHero{padding:10px}
+  .skinViewport,.skin{min-height:0}
+  .skin{gap:8px;padding:8px 7px 18px}
+  .skin.active{grid-template-columns:1fr}
+  .skinInfo{max-width:none;gap:6px}
+  .skinGauge .batteryGauge{width:240px;height:240px}
+  .skinGauge .gaugeCenter{inset:56px}
+  .skinGauge .gaugePct{font-size:48px}
+  .skinBattery .batteryPanel{min-height:205px}
+  .skinBattery .batteryArt{transform:scale(.88);margin:-5px 0 7px}
+  .skinMetric{min-height:52px;padding:7px 8px}
+  .skinMetric strong{font-size:14px}
+  .skinState{font-size:14px}
+}
+
+
+/* V5.24.4 — troca de skin por checkbox nativo; evita dependência de eventos JS no Android */
+#skinToggle{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  margin:0;
+  padding:0;
+  opacity:0;
+  cursor:pointer;
+  z-index:50;
+  -webkit-tap-highlight-color:transparent;
+}
+#statusHero{position:relative;}
+#skinToggle:not(:checked) ~ #skinViewport #skinGauge{
+  display:grid !important;
+}
+#skinToggle:not(:checked) ~ #skinViewport #skinBattery{
+  display:none !important;
+}
+#skinToggle:checked ~ #skinViewport #skinGauge{
+  display:none !important;
+}
+#skinToggle:checked ~ #skinViewport #skinBattery{
+  display:grid !important;
+}
+#skinToggle:checked ~ #skinViewport .skinHint::after{
+  content:" • Skin 2";
+}
+#skinToggle:not(:checked) ~ #skinViewport .skinHint::after{
+  content:" • Skin 1";
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="appHeader">
+    <div class="brandBlock">
+      <div class="logoMark">⚡</div>
+      <div><div class="brandName">ATORCH <span class="versionTag">V5.24.6</span></div><div class="brandSub">DT24PW Monitor</div></div>
+    </div>
+    <div class="btStatus"><span class="btIcon">⌁</span><span id="dot" class="btDot"></span><div><b id="statusText">Desconectado</b><small id="deviceName">DT24PW_BLE</small></div></div>
+    <button class="moreBtn" onclick="alert('ATORCH Monitor V5.23\\nMonitoramento local via Web Bluetooth.')">⋮</button>
+  </header>
+
+  <main class="dashboard">
+    <section class="topControls">
+      <button id="connect" class="connectBtn">Conectar DT24PW</button>
+      <button id="disconnect" class="ghostBtn">Desconectar</button>
+      <button id="export" class="ghostBtn">Exportar CSV</button>
+      <button id="clear" class="ghostBtn">Limpar sessão</button>
+    </section>
+
+    <section id="bleDiagSection" class="card btLogCard bleDiagHidden">
+      <div class="sectionHead">
+        <div><h2>Diagnóstico Bluetooth</h2><p>Registro técnico da conexão e dos pacotes recebidos</p></div>
+        <div class="logActions"><button id="copyBtLog" class="smallBtn">Copiar log</button><button id="clearBtLog" class="smallBtn">Limpar</button></div>
+      </div>
+      <div class="btDiagGrid">
+        <div><span>Web Bluetooth</span><strong id="btSupport">—</strong></div>
+        <div><span>Contexto seguro</span><strong id="secureContext">—</strong></div>
+        <div><span>GATT</span><strong id="gattState">—</strong></div>
+        <div><span>Notificações</span><strong id="notifyState">—</strong></div>
+        <div><span>Pacotes recebidos</span><strong id="packetCount">0</strong></div>
+        <div><span>Pacotes válidos</span><strong id="validPacketCount">0</strong></div>
+      </div>
+      <div class="logActions" style="margin-top:10px;flex-wrap:wrap">
+        <button id="bleProbe" class="smallBtn">Diagnóstico BLE profundo</button>
+        <button id="bleRead" class="smallBtn">Ler FFE1 agora</button>
+        <button id="bleNotify" class="smallBtn">Reativar notifications</button>
+      </div>
+      <pre id="bleSummary" class="btLog" style="max-height:150px">Aguardando diagnóstico...</pre>
+      <pre id="btLog" class="btLog">Nenhum evento registrado.</pre>
+    </section>
+
+    <section id="statusHero" class="statusHero card" aria-pressed="false" aria-label="Painel principal. Toque para alternar entre as skins." >
+      <input id="skinToggle" type="checkbox" aria-label="Alternar skin do painel">
+      <div id="skinViewport" class="skinViewport">
+        <div id="skinGauge" class="skin skinGauge active">
+          <div class="skinVisual">
+            <div id="batteryGauge" class="batteryGauge charge" style="--gauge:270deg">
+              <div class="gaugeTicks"><span class="g0">0%</span><span class="g25">25%</span><span class="g50">50%</span><span class="g75">75%</span><span class="g100">100%</span></div>
+              <div class="gaugeCenter">
+                <div id="batteryVisualPct" class="gaugePct">100<small>%</small></div>
+                <div class="gaugeLabel">SOC ESTIMADO</div>
+                <div id="batteryVisualState" class="gaugeFlow">↔ EM REPOUSO</div>
+              </div>
+            </div>
+          </div>
+          <div class="skinInfo">
+            <div id="skin1State" class="skinState">EM REPOUSO</div>
+            <div class="skinMetric voltage"><span class="metricIcon">ϟ</span><span>Tensão</span><strong id="skin1Voltage">--.- V</strong></div>
+            <div class="skinMetric current"><span class="metricIcon">↔</span><span>Corrente</span><strong id="skin1Current">0.0 A</strong></div>
+            <div class="skinMetric power"><span class="metricIcon">▥</span><span>Potência</span><strong id="skin1Power">0 W</strong></div>
+            <div class="skinMetric temp"><span class="metricIcon">♨</span><span>Temperatura</span><strong id="skin1Temp">-- °C</strong></div>
+            <div class="skinMeta"><span>Capacidade configurada <strong id="skin1Cap">200 Ah</strong></span><span>Banco <strong id="skin1Bank">200 Ah</strong></span></div>
+          </div>
+        </div>
+
+        <div id="skinBattery" class="skin skinBattery">
+          <div class="skinVisual">
+            <div class="batteryPanel">
+              <div id="batteryPanelTitle" class="batteryPanelTitle">EM REPOUSO</div>
+              <div id="batteryArt" class="batteryArt idle">
+                <div class="flowArrows"><span>➜</span><span>➜</span><span>➜</span></div>
+                <div class="batteryBody"><div id="batteryFill" class="batteryFill" style="width:100%"></div><div id="batteryArtPct" class="batteryArtPct">100%</div></div>
+                <div class="batteryTerminal"></div>
+              </div>
+              <div class="batteryPanelMeta"><span><strong id="batteryPanelCurrent">0.0 A</strong><br>Corrente</span><span><strong id="batteryPanelPower">0 W</strong><br>Potência</span><span><strong id="batteryPanelVoltage">--.- V</strong><br>Tensão</span></div>
+            </div>
+          </div>
+          <div class="skinInfo">
+            <div id="skin2State" class="skinState">EM REPOUSO</div>
+            <div class="skinMetric voltage"><span class="metricIcon">ϟ</span><span>Tensão</span><strong id="skin2Voltage">--.- V</strong></div>
+            <div class="skinMetric current"><span class="metricIcon">↔</span><span>Corrente</span><strong id="skin2Current">0.0 A</strong></div>
+            <div class="skinMetric power"><span class="metricIcon">▥</span><span>Potência</span><strong id="skin2Power">0 W</strong></div>
+            <div class="skinMetric temp"><span class="metricIcon">♨</span><span>Temperatura</span><strong id="skin2Temp">-- °C</strong></div>
+            <div class="skinMeta"><span>Capacidade configurada <strong id="skin2Cap">200 Ah</strong></span><span>Banco <strong id="skin2Bank">200 Ah</strong></span></div>
+          </div>
+        </div>
+
+        <div class="skinHint">Toque para trocar a skin</div>
+      </div>
+    </section>
+
+    <section class="miniGrid">
+      <div class="miniCard"><span class="miniIcon green">▣</span><small>Capacidade real</small><strong><span id="batteryCap2">200</span> Ah</strong></div>
+      <div class="miniCard"><span class="miniIcon green">↥</span><small>Ah em carga</small><strong id="chargeAh">0.000</strong><em>Ah</em></div>
+      <div class="miniCard"><span class="miniIcon red">↧</span><small>Ah em descarga</small><strong id="dischargeAh">0.000</strong><em>Ah</em></div>
+      <div class="miniCard"><span class="miniIcon">◷</span><small>Estado</small><strong><span id="flowPill" class="pill">Repouso</span></strong></div>
+    </section>
+    <section class="estimateGrid">
+      <div class="estimateCard discharge">
+        <div class="estimateIcon">↓</div><div class="estimateTitle">Autonomia estimada</div>
+        <div id="autonomy" class="estimateValue">--:--</div><div id="autonomyHint" class="estimateHint">até a tensão mínima</div>
+        <div class="estimateBar"><span id="autonomyBar"></span></div>
+      </div>
+      <div class="estimateCard charge">
+        <div class="estimateIcon">↑</div><div class="estimateTitle">Tempo de carga restante</div>
+        <div id="chargeTime" class="estimateValue">--:--</div><div id="chargeTimeHint" class="estimateHint">estimativa até 100% SOC</div>
+        <div class="estimateBar"><span id="chargeTimeBar"></span></div>
+      </div>
+    </section>
+
+    <section id="history" class="card historyCard">
+      <div class="cardHeader">
+        <h2>⌁ &nbsp;Histórico do SOC</h2>
+        <div class="rangeBtns">
+          <button class="rangeBtn active" data-hours="1" onclick="setSocRange(1)">1h</button>
+          <button class="rangeBtn" data-hours="6" onclick="setSocRange(6)">6h</button>
+          <button class="rangeBtn" data-hours="12" onclick="setSocRange(12)">12h</button>
+          <button class="rangeBtn" data-hours="24" onclick="setSocRange(24)">24h</button>
+        </div>
+      </div>
+      <div class="socChartWrap"><canvas id="socChart"></canvas></div>
+      <div class="chartLegend"><span><i class="lg red"></i>Descarga</span><span><i class="lg gray"></i>Repouso</span><span><i class="lg green"></i>Carga</span></div>
+      <div class="socBar"><span class="barRed"></span><span class="barGray"></span><span class="barGreen"></span></div>
+      <div class="historyMeta"><span>Atual: <b id="socChartNow">100.0%</b></span><button id="clearSocHistory" class="smallAction">Apagar histórico</button></div>
+    </section>
+
+    <section id="sessionHistory" class="card sessionCard">
+      <div class="cardHeader"><h2>◷ &nbsp;Histórico de sessões</h2><span>somente períodos conectados</span></div>
+      <div id="sessionCurrent" class="sessionCurrent">
+        <div class="sessionStatus"><strong id="sessionCurrentTitle">Nenhuma sessão ativa</strong><span id="sessionCurrentTime">—</span></div>
+        <div class="sessionGrid">
+          <div class="row"><span>Início</span><strong id="sessStart">—</strong></div>
+          <div class="row"><span>Duração</span><strong id="sessDuration">—</strong></div>
+          <div class="row"><span>SOC inicial</span><strong id="sessSocStart">—</strong></div>
+          <div class="row"><span>SOC atual</span><strong id="sessSocNow">—</strong></div>
+          <div class="row"><span>Variação SOC</span><strong id="sessSocDelta">—</strong></div>
+          <div class="row"><span>Amostras</span><strong id="sessSamples">—</strong></div>
+          <div class="row"><span>V tensão</span><strong id="sessVoltageRange">—</strong></div>
+          <div class="row"><span>I máxima</span><strong id="sessCurrentMax">—</strong></div>
+          <div class="row"><span>P máxima</span><strong id="sessPowerMax">—</strong></div>
+          <div class="row"><span>Ah carga</span><strong id="sessChargeAh">—</strong></div>
+          <div class="row"><span>Ah descarga</span><strong id="sessDischargeAh">—</strong></div>
+          <div class="row"><span>Energia</span><strong id="sessEnergy">—</strong></div>
+        </div>
+      </div>
+      <div id="sessionGap" class="sessionGap">Sem dados fora das sessões conectadas. O intervalo entre conexões não é interpolado.</div>
+      <div id="sessionList" class="sessionList"><div class="sessionEmpty">Nenhuma sessão concluída ainda.</div></div>
+      <div class="sessionActions"><button id="clearSessionHistory" class="smallAction">Apagar histórico de sessões</button></div>
+      <div class="sessionNote">Cada sessão começa no primeiro pacote válido recebido. Ao desconectar, o resumo é salvo. Períodos sem conexão permanecem como lacunas.</div>
+    </section>
+
+    <section id="realtimeCard" class="card realtimeCard">
+      <div class="cardHeader"><h2>Leitura em tempo real</h2><span id="samples">0 amostras</span></div>
+      <div class="rtTabs">
+        <button class="rtTab active" data-metric="voltage" onclick="setRealtimeMetric('voltage')">Tensão</button>
+        <button class="rtTab" data-metric="current" onclick="setRealtimeMetric('current')">Corrente</button>
+        <button class="rtTab" data-metric="power" onclick="setRealtimeMetric('power')">Potência</button>
+      </div>
+      <div class="chart"><canvas id="chart"></canvas></div>
+      <div class="rtScale"><span id="rtMin">—</span><span id="rtMax">—</span></div>
+      <div class="rtHint">Escala absoluta da grandeza selecionada · sem interpolação entre períodos sem conexão.</div>
+    </section>
+
+    <section class="card batteryData">
+      <div class="cardHeader"><h2>Bateria</h2><span>coulomb counting</span></div>
+      <div class="dataRows">
+        <div class="row"><span>Saldo integrado</span><strong><span id="netAh">0.000</span> Ah</strong></div>
+        <div class="row"><span>Energia acumulada</span><strong><span id="energy">--.--</span> kWh</strong></div>
+        <div class="row"><span>Tempo acumulado</span><strong id="runtime">—</strong></div>
+      </div>
+      <div class="note">O SOC usa coulomb counting como base. A tensão é usada apenas como referência auxiliar para evitar que a tensão elevada durante a carga ou a queda momentânea ao ligar o inversor produzam um SOC artificial.</div>
+    </section>
+
+    <section id="settingsSection" class="card settings">
+      <div class="cardHeader"><h2>Configurações</h2></div>
+      <div class="settingsGrid">
+        <div class="field"><label>Capacidade real do banco (Ah)</label><input id="batteryInput" type="number" min="1" max="2000" step="1" value="200"></div>
+        <div class="field"><label>SOC inicial (%)</label><input id="socInput" type="number" min="0" max="100" step="0.1" value="100"></div>
+        <div class="field"><label>Tensão mínima para estimativa de descarga (V)</label><input id="minDischargeVoltage" type="number" min="10" max="13.5" step="0.1" value="11.8"></div>
+      </div>
+      <div class="mode">Modo de detecção do sentido</div>
+      <div class="modeBtns"><button id="autoBtn" class="active">Automático</button><button id="dischargeBtn">− Descarga</button><button id="chargeBtn">+ Carga</button></div>
+      <div class="settingsActions"><button id="saveSettings" class="connectBtn">Salvar e reiniciar SOC</button><button id="calFull" class="ghostBtn">Calibrar 100%</button><button id="calZero" class="ghostBtn">Calibrar 0%</button></div>
+      <button id="toggleBleDiag" class="ghostBtn bleDiagToggle">Mostrar diagnóstico BLE avançado</button>
+    </section>
+
+    <section id="diagSection" class="card diag">
+      <div class="cardHeader"><h2>Informações do equipamento</h2></div>
+      <div class="diagGrid">
+        <div class="row"><span>Dispositivo</span><strong id="deviceName2">DT24PW_BLE</strong></div>
+        <div class="row"><span>Pacote</span><strong>01 / 02 / DC</strong></div>
+        <div class="row"><span>Energia DT24PW</span><strong><span id="energyDiag">—</span> kWh</strong></div>
+        <div class="row"><span>Capacidade DT24PW</span><strong><span id="deviceCap">—</span> Ah</strong></div>
+        <div class="row"><span>Backlight</span><strong id="backlight">—</strong></div>
+        <div class="row"><span>Campo 20–23</span><strong id="unknownA">—</strong></div>
+        <div class="row"><span>Campo 31–34</span><strong id="unknownB">—</strong></div>
+        <div class="row"><span>Checksum</span><strong id="checksum">—</strong></div>
+      </div>
+      <div id="raw" class="raw">Nenhum pacote recebido.</div>
+    </section>
+
+    <nav class="bottomNav">
+      <button onclick="document.getElementById('settingsSection').scrollIntoView({behavior:'smooth'})"><b>⚙</b><span>Configurações</span></button>
+      <button onclick="document.getElementById('export').click()"><b>▤</b><span>Logs CSV</span></button>
+      <button onclick="document.getElementById('realtimeCard').scrollIntoView({behavior:'smooth'})"><b>▥</b><span>Estatísticas</span></button>
+      <button onclick="document.getElementById('sessionHistory').scrollIntoView({behavior:'smooth'})"><b>◷</b><span>Histórico</span></button>
+      <button onclick="alert('ATORCH Monitor V5.23\\n\\nO SOC é estimado por coulomb counting e refinado com o comportamento da tensão. A autonomia de descarga usa uma tensão mínima configurável como limite conservador.\\n\\nBanco configurado: 200 Ah.')"><b>?</b><span>Ajuda</span></button>
+    </nav>
+    <div class="footer">ATORCH DT24PW Monitor V5.24.6 &nbsp;|&nbsp; Monitoramento em tempo real</div>
+  </main>
+</div>
+
+<script>
+const SERVICE='0000ffe0-0000-1000-8000-00805f9b34fb';
+const CHAR='0000ffe1-0000-1000-8000-00805f9b34fb';
+const $=id=>document.getElementById(id);
+let device=null, characteristic=null, connected=false, samples=[], csvRows=[], lastSampleMs=null;
+let lastFlow='idle', confidence='—', evidenceAge=0;
+let autoFlow='idle';
+let history=[];
+let candidateFlow='idle',candidateCount=0,seededInitialFlow=false;
+let socAnchorInitialized=false;
+let socHistory=JSON.parse(localStorage.getItem('atorch_soc_history_v55')||'[]');
+let realtimeMetric='voltage';
+const SESSION_KEY='atorch_session_history_v519';
+const CURRENT_SESSION_KEY='atorch_current_session_v519';
+let sessionHistory=JSON.parse(localStorage.getItem(SESSION_KEY)||'[]');
+let currentSession=null;
+
+function saveSessionHistory(){
+  try{localStorage.setItem(SESSION_KEY,JSON.stringify(sessionHistory));}catch(e){btLog('AVISO | não foi possível salvar histórico de sessões: '+(e?.message||e));}
+}
+function saveCurrentSession(){
+  try{if(currentSession)localStorage.setItem(CURRENT_SESSION_KEY,JSON.stringify(currentSession));else localStorage.removeItem(CURRENT_SESSION_KEY);}catch(e){btLog('AVISO | não foi possível salvar sessão atual: '+(e?.message||e));}
+}
+function fmtShortDate(t){return new Date(t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});}
+function fmtClock(t){return new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function fmtDuration(ms){
+  const sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);
+  if(h>0)return h+'h '+String(m).padStart(2,'0')+'min';
+  return m+'min';
+}
+function fmtSigned(v){return (v>=0?'+':'')+v.toFixed(1)+'%';}
+function sessionStart(p,now){
+  if(currentSession)return;
+  currentSession={id:String(now),start:now,last:now,initialSoc:state.soc,finalSoc:state.soc,initialEnergy:p.energy,finalEnergy:p.energy,initialChargeAh:state.chargeAh,initialDischargeAh:state.dischargeAh,chargeAh:0,dischargeAh:0,minVoltage:p.voltage,maxVoltage:p.voltage,maxCurrent:p.current,maxPower:p.voltage*p.current,samples:0};
+  saveCurrentSession();renderSessionHistory();
+}
+function sessionUpdate(p,now,power){
+  sessionStart(p,now);
+  const s=currentSession;s.last=now;s.finalSoc=state.soc;s.finalEnergy=p.energy;s.samples++;
+  s.minVoltage=Math.min(s.minVoltage,p.voltage);s.maxVoltage=Math.max(s.maxVoltage,p.voltage);
+  s.maxCurrent=Math.max(s.maxCurrent,p.current);s.maxPower=Math.max(s.maxPower,power);
+  s.chargeAh=Math.max(0,state.chargeAh-s.initialChargeAh);s.dischargeAh=Math.max(0,state.dischargeAh-s.initialDischargeAh);
+  saveCurrentSession();renderSessionHistory();
+}
+function finalizeSession(reason='desconectado'){
+  if(!currentSession)return;
+  const s=currentSession;s.end=s.last||Date.now();s.reason=reason;s.finalSoc=state.soc;
+  s.chargeAh=Math.max(0,state.chargeAh-s.initialChargeAh);s.dischargeAh=Math.max(0,state.dischargeAh-s.initialDischargeAh);
+  s.energyDelta=Math.max(0,(Number(s.finalEnergy)||0)-(Number(s.initialEnergy)||0));
+  if(s.samples>0)sessionHistory.unshift(s);
+  if(sessionHistory.length>60)sessionHistory=sessionHistory.slice(0,60);
+  currentSession=null;saveCurrentSession();saveSessionHistory();renderSessionHistory();
+}
+function recoverPreviousSession(){
+  try{const s=JSON.parse(localStorage.getItem(CURRENT_SESSION_KEY)||'null');if(s&&s.samples>0){s.end=s.last;s.reason='página encerrada';s.chargeAh=Math.max(0,(s.chargeAh||0));s.dischargeAh=Math.max(0,(s.dischargeAh||0));s.energyDelta=Math.max(0,(Number(s.finalEnergy)||0)-(Number(s.initialEnergy)||0));sessionHistory.unshift(s);if(sessionHistory.length>60)sessionHistory=sessionHistory.slice(0,60);saveSessionHistory();}}catch(e){}
+  localStorage.removeItem(CURRENT_SESSION_KEY);currentSession=null;
+}
+function sessionSummary(s){
+  const end=s.end||s.last,delta=(Number(s.finalSoc)||0)-(Number(s.initialSoc)||0);
+  return `<div class="sessionItem"><div class="sessionItemHead"><strong>${fmtShortDate(s.start)} · ${fmtClock(s.start)}–${fmtClock(end)}</strong><span>${fmtDuration(end-s.start)}</span></div><div class="sessionItemGrid"><div>SOC<b>${Number(s.initialSoc).toFixed(1)}% → ${Number(s.finalSoc).toFixed(1)}%</b></div><div>V tensão<b>${Number(s.minVoltage).toFixed(1)}–${Number(s.maxVoltage).toFixed(1)} V</b></div><div>I máxima<b>${Number(s.maxCurrent).toFixed(3)} A</b></div><div>Δ SOC<b>${fmtSigned(delta)}</b></div><div>Ah carga<b>${Number(s.chargeAh||0).toFixed(3)} Ah</b></div><div>Ah descarga<b>${Number(s.dischargeAh||0).toFixed(3)} Ah</b></div><div>P máxima<b>${Number(s.maxPower).toFixed(1)} W</b></div><div>Energia<b>${Number(s.energyDelta||0).toFixed(2)} kWh</b></div><div>Amostras<b>${s.samples}</b></div></div></div>`;
+}
+function renderSessionHistory(){
+  const title=$('sessionCurrentTitle'),time=$('sessionCurrentTime'),gap=$('sessionGap');
+  if(currentSession){
+    title.textContent='Sessão atual';time.textContent=fmtShortDate(currentSession.start)+' · '+fmtClock(currentSession.start);
+    const now=Date.now(),socDelta=state.soc-currentSession.initialSoc;
+    btSet('sessStart',fmtClock(currentSession.start));btSet('sessDuration',fmtDuration(now-currentSession.start));btSet('sessSocStart',currentSession.initialSoc.toFixed(1)+'%');btSet('sessSocNow',state.soc.toFixed(1)+'%');btSet('sessSocDelta',fmtSigned(socDelta));btSet('sessSamples',String(currentSession.samples));btSet('sessVoltageRange',currentSession.minVoltage.toFixed(1)+'–'+currentSession.maxVoltage.toFixed(1)+' V');btSet('sessCurrentMax',currentSession.maxCurrent.toFixed(3)+' A');btSet('sessPowerMax',currentSession.maxPower.toFixed(1)+' W');btSet('sessChargeAh',currentSession.chargeAh.toFixed(3)+' Ah');btSet('sessDischargeAh',currentSession.dischargeAh.toFixed(3)+' Ah');btSet('sessEnergy',Math.max(0,currentSession.finalEnergy-currentSession.initialEnergy).toFixed(2)+' kWh');
+    gap.textContent='Monitorando agora. Ao desconectar, esta sessão será encerrada e salva; não haverá dados estimados fora dela.';
+  }else{
+    title.textContent='Nenhuma sessão ativa';time.textContent='—';
+    ['sessStart','sessDuration','sessSocStart','sessSocNow','sessSocDelta','sessSamples','sessVoltageRange','sessCurrentMax','sessPowerMax','sessChargeAh','sessDischargeAh','sessEnergy'].forEach(id=>btSet(id,'—'));
+    gap.textContent='Sem dados fora das sessões conectadas. O intervalo entre conexões não é interpolado.';
+  }
+  const list=$('sessionList');if(list)list.innerHTML=sessionHistory.length?sessionHistory.slice(0,12).map(sessionSummary).join(''):'<div class="sessionEmpty">Nenhuma sessão concluída ainda.</div>';
+}
+recoverPreviousSession();
+
+const savedCap=Number(localStorage.getItem('atorch_battery_cap')||200);
+const savedSoc=Number(localStorage.getItem('atorch_soc')??100);
+const savedMode=localStorage.getItem('atorch_soc_mode_v5')||'auto';
+const savedCharge=Number(localStorage.getItem('atorch_charge_ah_v5')||0);
+const savedDischarge=Number(localStorage.getItem('atorch_discharge_ah_v5')||0);
+const savedMinDischargeVoltage=Number(localStorage.getItem('atorch_min_discharge_voltage_v520')||11.8);
+const state={
+  batteryCap:Math.max(1,savedCap),
+  soc:Math.min(100,Math.max(0,savedSoc)),
+  mode:['auto','charge','discharge'].includes(savedMode)?savedMode:'auto',
+  chargeAh:Math.max(0,savedCharge),
+  dischargeAh:Math.max(0,savedDischarge),
+  minDischargeVoltage:Math.min(13.5,Math.max(10,savedMinDischargeVoltage))
+};
+$('batteryInput').value=state.batteryCap;
+$('socInput').value=state.soc.toFixed(1);
+$('minDischargeVoltage').value=state.minDischargeVoltage.toFixed(1);
+if($('batteryCap'))$('batteryCap').textContent=state.batteryCap;if($('batteryCap2'))$('batteryCap2').textContent=state.batteryCap;
+
+function u24(a,i){return ((a[i]<<16)|(a[i+1]<<8)|a[i+2])>>>0}
+function u32(a,i){return (a[i]*0x1000000+a[i+1]*0x10000+a[i+2]*0x100+a[i+3])>>>0}
+function u16(a,i){return ((a[i]<<8)|a[i+1])>>>0}
+function hex(a){return [...a].map(x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' ')}
+function fmtTime(sec){const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);return `${String(h).padStart(4,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
+function saveState(){
+  localStorage.setItem('atorch_battery_cap',String(state.batteryCap));
+  localStorage.setItem('atorch_soc',String(state.soc));
+  localStorage.setItem('atorch_soc_mode_v5',state.mode);
+  localStorage.setItem('atorch_charge_ah_v5',String(state.chargeAh));
+  localStorage.setItem('atorch_discharge_ah_v5',String(state.dischargeAh));
+  localStorage.setItem('atorch_min_discharge_voltage_v520',String(state.minDischargeVoltage));
+}
+function setStatus(on,text){connected=on;$('dot').className='dot'+(on?' on':'');$('statusText').textContent=text;$('connect').disabled=on}
+function parsePacket(a){
+  if(a.length<36 || a[0]!==0xFF || a[1]!==0x55 || a[2]!==0x01) return null;
+  const voltage=u24(a,4)/10;
+  const current=u24(a,7)/1000;
+  const capacity=u24(a,10)/1000;
+  const energy=u32(a,13)/100;
+  const price=u24(a,17)/100;
+  const temperature=u16(a,24);
+  const hours=u16(a,26),minutes=a[28],seconds=a[29],runtime=hours*3600+minutes*60+seconds;
+  const backlight=a[30];
+  return {voltage,current,capacity,energy,price,temperature,runtime,backlight,
+    unknownA:hex(a.slice(20,24)),unknownB:hex(a.slice(31,35)),checksum:a[35],raw:hex(a)};
+}
+
+/* Inferência V5:
+   - O DT24PW transmite magnitude de corrente.
+   - Quando a corrente muda significativamente, observamos o sinal da variação da tensão.
+   - corrente sobe + tensão sobe => carga; corrente sobe + tensão cai => descarga.
+   - Depois da confirmação, o estado é mantido enquanto a corrente permanecer estável.
+   - Uma janela de tendências ajuda a evitar decisões por uma única amostra.
+*/
+function inferFlow(voltage,current,now){
+  history.push({t:now,v:voltage,i:current});
+  if(history.length>30) history.shift();
+  if(current<0.12){
+    autoFlow='idle';candidateFlow='idle';candidateCount=0;confidence='alta';evidenceAge=0;
+    return 'idle';
+  }
+
+  // V5.23 — correção cirúrgica da direção quando o app inicia
+  // com corrente já presente. O DT24PW transmite a corrente como magnitude;
+  // portanto, a direção continua sendo inferida pelo comportamento da tensão.
+  // Na faixa intermediária não assumimos "carga" apenas pela tensão inicial:
+  // aguardamos evidência temporal para evitar mostrar carga durante descarga.
+  if(!seededInitialFlow && history.length>=2){
+    const avgV=history.slice(-2).reduce((s,p)=>s+p.v,0)/2;
+    if(avgV>=13.40){
+      autoFlow='charge'; confidence='média';
+      seededInitialFlow=true;
+    }else if(avgV<=13.05){
+      autoFlow='discharge'; confidence='baixa';
+      seededInitialFlow=true;
+    }
+    evidenceAge=0;
+  }
+
+  if(history.length<5) return autoFlow;
+  const n=history.length;
+  const recent=history.slice(-5);
+  const old=history[Math.max(0,n-10)] || history[0];
+  const dv=voltage-old.v;
+  const di=current-old.i;
+  const slope=(recent[recent.length-1].v-recent[0].v)/(recent.length-1);
+  let candidate=null;
+
+  // Evidência forte: mudança de corrente acompanhada pela direção da tensão.
+  if(Math.abs(di)>=0.45){
+    if(dv>0.025) candidate='charge';
+    else if(dv<-0.025) candidate='discharge';
+  }
+
+  // Evidência temporal: durante uma descarga estável a corrente pode quase não
+  // variar. Nesse caso, a queda sustentada da tensão deve poder corrigir um
+  // "charge" inicial. O mesmo vale, de forma simétrica, para carga.
+  if(!candidate && current>=0.50 && Math.abs(dv)>=0.010){
+    if(dv<0 && slope<=-0.0025) candidate='discharge';
+    else if(dv>0 && slope>=0.0025) candidate='charge';
+  }
+
+  // Mantém o critério original da V5.23 como terceira linha de evidência.
+  if(!candidate && Math.abs(slope)>=0.004 && Math.abs(di)>=0.25){
+    candidate=slope>0?'charge':'discharge';
+  }
+
+  if(candidate){
+    if(candidate===candidateFlow) candidateCount++;
+    else {candidateFlow=candidate;candidateCount=1}
+    const needed=autoFlow==='idle'?2:3;
+    if(candidateCount>=needed){
+      autoFlow=candidate;
+      confidence=(Math.abs(dv)>=0.05||Math.abs(slope)>=0.01)?'alta':'média';
+      evidenceAge=0;
+    }
+  }else{
+    candidateFlow='idle';candidateCount=0;evidenceAge++;
+    if(evidenceAge>20 && autoFlow!=='idle') confidence='média';
+  }
+  return autoFlow;
+}
+function activeFlow(p,now){
+  if(state.mode==='charge') return {flow:'charge',conf:'manual'};
+  if(state.mode==='discharge') return {flow:'discharge',conf:'manual'};
+  return {flow:inferFlow(p.voltage,p.current,now),conf:confidence};
+}
+function renderFlow(flow,current,conf){
+  const ring=$('flowRing'); if(ring) ring.className='flowRing '+flow;
+  btSet('flowIcon',flow==='charge'?'↑':flow==='discharge'?'↓':'↔');
+  btSet('flowText',flow==='charge'?'Carregando':flow==='discharge'?'Descarregando':'Sem corrente');
+  btSet('flowA',current<0.12?'aguardando corrente':(state.mode==='auto'?'detecção automática • confiança '+conf:'modo manual'));
+  btSet('flowPill',flow==='charge'?'Carregando':flow==='discharge'?'Descarregando':'Repouso');
+  const stateLabel=flow==='charge'?'CARREGANDO':flow==='discharge'?'DESCARREGANDO':'EM REPOUSO';
+  btSet('skin1State',stateLabel);btSet('skin2State',stateLabel);
+  btSet('batteryPanelCurrent',current<0.12?'0.0 A':current.toFixed(1)+' A');
+  btSet('skin1Current',current<0.12?'0.0 A':current.toFixed(1)+' A');
+  btSet('skin2Current',current<0.12?'0.0 A':current.toFixed(1)+' A');
+  const pv=$('batteryPanelPower'),vv=$('batteryPanelVoltage');
+  const displayPower=(lastVoltage!==null&&Number.isFinite(current)?(lastVoltage*current).toFixed(0):'0')+' W';
+  const displayVoltage=lastVoltage!==null?lastVoltage.toFixed(1)+' V':'--.- V';
+  if(pv)pv.textContent=displayPower;
+  if(vv)vv.textContent=displayVoltage;
+  btSet('skin1Power',displayPower);btSet('skin2Power',displayPower);
+  btSet('skin1Voltage',displayVoltage);btSet('skin2Voltage',displayVoltage);
+  const pill=$('flowPill'); if(pill) pill.className='pill '+(flow==='charge'?'green':flow==='discharge'?'red':'');
+  btSet('confidence',conf);
+  const confEl=$('confidence'); if(confEl) confEl.className='pill '+(conf==='alta'?'green':conf==='média'?'amber':'');
+}
+function voltageSocIdle(v){
+  // OCV is used only after a genuine rest period. This is an approximate
+  // auxiliary reference, never a replacement for coulomb counting.
+  const pts=[[12.60,0],[12.80,5],[12.90,10],[13.00,20],[13.05,30],[13.10,45],[13.15,58],[13.20,70],[13.25,80],[13.30,88],[13.35,95],[13.40,100]];
+  if(v<=pts[0][0])return 0;if(v>=pts.at(-1)[0])return 100;
+  for(let i=1;i<pts.length;i++){
+    if(v<=pts[i][0]){const [v0,s0]=pts[i-1],[v1,s1]=pts[i];return s0+(v-v0)*(s1-s0)/(v1-v0)}
+  }return 100;
+}
+function chargeCompletion(v,current,flow,now){
+  // The manufacturer's manual specifies 15.2 V CV charging and termination
+  // when current is <=0.02 C. For the 200 Ah bank, 0.02 C = 4 A.
+  // We do not require 15.2 V as a normal operating point because the user's
+  // observed system may use a lower charger setting. Instead, a sustained
+  // high-voltage/low-current condition can confirm the top end.
+  if(flow!=='charge') return false;
+  if(v>=14.0 && current<=4.0){
+    if(!chargeTopSince)chargeTopSince=now;
+    return now-chargeTopSince>=30000;
+  }
+  chargeTopSince=null;
+  return false;
+}
+function chargeVoltageCeiling(v){
+  const pts=[[12.80,65],[13.00,75],[13.20,82],[13.40,88],[13.60,93],[13.80,97],[13.95,99],[14.00,100]];
+  if(v<=pts[0][0])return 65;
+  if(v>=14.00)return 100;
+  for(let i=1;i<pts.length;i++){
+    if(v<=pts[i][0]){
+      const [v0,s0]=pts[i-1],[v1,s1]=pts[i];
+      return s0+(v-v0)*(s1-s0)/(v1-v0);
+    }
+  }
+  return 100;
+}
+let stableIdleSince=null,lastVoltage=null,lastFlowForSoc='idle',chargeTopSince=null;
+function integrate(current,flow,now,voltage){
+  if(lastSampleMs===null){lastSampleMs=now;lastVoltage=voltage;lastFlowForSoc=flow;return}
+  let dt=(now-lastSampleMs)/3600000;lastSampleMs=now;
+  if(!Number.isFinite(dt)||dt<=0||dt>0.05)return;
+
+  if(flow==='charge' && current>=0.12){
+    state.chargeAh+=current*dt;
+    state.soc=Math.min(100,state.soc+(current*dt/state.batteryCap)*100);
+    stableIdleSince=null;
+    // Do not equate ordinary charging voltage with 100%. Only a sustained
+    // end-of-charge condition can snap to 100%.
+    if(chargeCompletion(voltage,current,flow,now)) state.soc=100;
+  }else if(flow==='discharge' && current>=0.12){
+    state.dischargeAh+=current*dt;
+    state.soc=Math.max(0,state.soc-(current*dt/state.batteryCap)*100);
+    stableIdleSince=null;chargeTopSince=null;
+  }else if(current<0.12){
+    chargeTopSince=null;
+    if(stableIdleSince===null)stableIdleSince=now;
+    // After 60 s of rest, use OCV only as a slow anchor. This avoids the
+    // initial voltage rebound after the inverter is switched off.
+    if(now-stableIdleSince>=60000){
+      const vSoc=voltageSocIdle(voltage);
+      const error=vSoc-state.soc;
+      // Maximum correction: 0.15 percentage point per sample (~1%/minute).
+      state.soc=Math.max(0,Math.min(100,state.soc+Math.max(-0.15,Math.min(0.15,error*0.025))));
+    }
+  }else{stableIdleSince=null;chargeTopSince=null}
+  lastVoltage=voltage;lastFlowForSoc=flow;saveState();
+}
+function recordSOC(now){
+  const last=socHistory[socHistory.length-1];
+  if(!last || now-last.t>=10000){
+    socHistory.push({t:now,s:state.soc});
+    if(socHistory.length>4320)socHistory.shift();
+  }else{
+    last.s=state.soc;
+  }
+  try{localStorage.setItem('atorch_soc_history_v55',JSON.stringify(socHistory));}catch(e){btLog('AVISO | não foi possível salvar histórico SOC: '+(e?.message||e));}
+}
+function formatEstimate(hours){
+  if(!Number.isFinite(hours)||hours<0)return '--:--';
+  const totalMin=Math.max(0,Math.round(hours*60));
+  const h=Math.floor(totalMin/60),m=totalMin%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+function updateAutonomy(current,flow){
+  const el=$('autonomy'),hint=$('autonomyHint'),chargeEl=$('chargeTime'),chargeHint=$('chargeTimeHint');
+  const recent=samples.slice(-10).map(s=>s.i).filter(v=>Number.isFinite(v)&&v>=0);
+  const avgCurrent=recent.length?recent.reduce((a,b)=>a+b,0)/recent.length:current;
+  const cap=Math.max(1,state.batteryCap);
+  const minV=state.minDischargeVoltage;
+  const reserveSoc=Math.max(0,Math.min(100,voltageSocIdle(minV)));
+  if(flow==='discharge' && avgCurrent>=0.12){
+    if(lastVoltage!==null && lastVoltage<=minV){
+      if(el)el.textContent='00:00';
+      if(hint)hint.textContent='tensão mínima atingida';
+    }else{
+      const usableSoc=Math.max(0,state.soc-reserveSoc);
+      const remainingAh=cap*(usableSoc/100);
+      const hours=remainingAh/avgCurrent;
+      if(el)el.textContent=formatEstimate(hours);
+      if(hint)hint.textContent='até '+minV.toFixed(1)+' V · reserva ≈ '+reserveSoc.toFixed(0)+'%';
+    }
+    const bar=$('autonomyBar');if(bar)bar.style.width=Math.max(0,Math.min(100,(state.soc-reserveSoc)/(100-reserveSoc)*100))+'%';
+  }else{
+    if(el)el.textContent='--:--';
+    if(hint)hint.textContent=flow==='charge'?'não se aplica durante a carga':'aguardando corrente';
+    const bar=$('autonomyBar');if(bar)bar.style.width='0%';
+  }
+  if(flow==='charge' && avgCurrent>=0.12){
+    const missingAh=cap*(1-state.soc/100);
+    if(missingAh<=0.01){
+      if(chargeEl)chargeEl.textContent='00:00';
+      if(chargeHint)chargeHint.textContent='SOC estimado em 100%';
+      const bar=$('chargeTimeBar');if(bar)bar.style.width='100%';
+    }else{
+      const hours=missingAh/avgCurrent;
+      if(chargeEl)chargeEl.textContent=formatEstimate(hours);
+      if(chargeHint)chargeHint.textContent='estimativa até 100% SOC · '+(missingAh.toFixed(1))+' Ah restantes';
+      const bar=$('chargeTimeBar');if(bar)bar.style.width=Math.max(0,Math.min(100,state.soc))+'%';
+    }
+  }else{
+    if(chargeEl)chargeEl.textContent='--:--';
+    if(chargeHint)chargeHint.textContent=flow==='discharge'?'não se aplica durante a descarga':'aguardando corrente';
+    const bar=$('chargeTimeBar');if(bar)bar.style.width='0%';
+  }
+}
+let activeSkin=0;
+function setSkin(next,animate=true){
+  const a=$('skinGauge'),b=$('skinBattery');
+  if(!a||!b)return;
+  const target=next===1?1:0;
+  if(target===activeSkin)return;
+  const current=activeSkin===0?a:b,other=target===0?a:b;
+  if(animate){
+    current.classList.add('isLeaving');
+    setTimeout(()=>{
+      current.classList.remove('active','isLeaving');
+      other.classList.add('active','isEntering');
+      requestAnimationFrame(()=>other.classList.remove('isEntering'));
+    },120);
+  }else{
+    current.classList.remove('active','isLeaving');
+    other.classList.add('active');
+  }
+  activeSkin=target;
+  if(skinHost)skinHost.setAttribute('aria-pressed',target===1?'true':'false');
+}
+function toggleSkin(){setSkin(activeSkin===0?1:0,true)}
+const skinHost=$('statusHero');
+const skinViewport=$('skinViewport');
+const skinToggle=$('skinToggle');
+// V5.24.4 — a troca visual é feita pelo checkbox nativo do navegador.
+// Isso elimina a dependência de click/pointer/touch no Chrome Android.
+if(skinToggle){
+  skinToggle.addEventListener('change',()=>{
+    activeSkin=skinToggle.checked?1:0;
+    if(skinHost)skinHost.setAttribute('aria-pressed',skinToggle.checked?'true':'false');
+  });
+}
+function updateBatteryVisual(pct,flow){
+  const gauge=$('batteryGauge'),center=$('batteryVisualPct'),stateEl=$('batteryVisualState'),state2=$('batteryVisualState2');
+  if(!gauge||!center||!stateEl)return;
+  const p=Math.max(0,Math.min(100,pct)),deg=(p/100)*270;
+  const flowClass=flow==='discharge'?'discharge':flow==='charge'?'charge':'idle';
+  gauge.style.setProperty('--gauge',deg+'deg');gauge.className='batteryGauge '+flowClass;
+  const skinA=$('skinGauge'),skinB=$('skinBattery');
+  if(skinA)skinA.classList.remove('charge','discharge','idle'),skinA.classList.add(flowClass);
+  if(skinB)skinB.classList.remove('charge','discharge','idle'),skinB.classList.add(flowClass);
+  center.innerHTML=p.toFixed(1)+'<small>%</small>';
+  const art=$('batteryArt'),fill=$('batteryFill'),artPct=$('batteryArtPct'),title=$('batteryPanelTitle');
+  if(art){art.className='batteryArt '+(flow==='discharge'?'discharge':flow==='charge'?'charge':'idle');}
+  if(fill)fill.style.width=p+'%';
+  if(artPct)artPct.textContent=p.toFixed(1)+'%';
+  if(title)title.textContent=flow==='charge'?'CARREGANDO':flow==='discharge'?'DESCARREGANDO':'EM REPOUSO';
+  const label=flow==='charge'?'↑ CARREGANDO':flow==='discharge'?'↓ DESCARREGANDO':'↔ EM REPOUSO';
+  stateEl.textContent=label;if(state2)state2.textContent=label;
+}
+function updateSOC(flow){
+  const pct=Math.min(100,Math.max(0,state.soc));
+  btSet('socText',pct.toFixed(1)+'%');
+  btSet('batteryCap',state.batteryCap);
+  btSet('batteryCap2',state.batteryCap);
+  btSet('skin1Cap',state.batteryCap+' Ah');btSet('skin2Cap',state.batteryCap+' Ah');
+  btSet('skin1Bank',state.batteryCap+' Ah');btSet('skin2Bank',state.batteryCap+' Ah');
+  btSet('netAh',(state.chargeAh-state.dischargeAh).toFixed(3));
+  btSet('chargeAh',state.chargeAh.toFixed(3));
+  btSet('dischargeAh',state.dischargeAh.toFixed(3));
+  const auto=$('autoBtn'),charge=$('chargeBtn'),discharge=$('dischargeBtn');
+  if(auto)auto.classList.toggle('active',state.mode==='auto');
+  if(charge)charge.classList.toggle('active',state.mode==='charge');
+  if(discharge)discharge.classList.toggle('active',state.mode==='discharge');
+  updateBatteryVisual(pct,flow||autoFlow);
+}
+function updateUI(p){
+  const now=Date.now(), power=p.voltage*p.current;
+  const result=activeFlow(p,now);
+  if(!socAnchorInitialized){
+    if(result.flow==='charge' && state.soc>=99.9 && p.voltage<13.95) state.soc=Math.min(state.soc,chargeVoltageCeiling(p.voltage));
+    socAnchorInitialized=true;saveState();
+  }
+  integrate(p.current,result.flow,now,p.voltage);
+  $('voltage').textContent=p.voltage.toFixed(1);
+  $('current').textContent=p.current.toFixed(3);
+  $('power').textContent=power.toFixed(1);
+  btSet('batteryPanelCurrent',p.current.toFixed(1)+' A');btSet('batteryPanelPower',power.toFixed(0)+' W');btSet('batteryPanelVoltage',p.voltage.toFixed(1)+' V');
+  btSet('skin1Current',p.current.toFixed(1)+' A');btSet('skin2Current',p.current.toFixed(1)+' A');
+  btSet('skin1Power',power.toFixed(0)+' W');btSet('skin2Power',power.toFixed(0)+' W');
+  btSet('skin1Voltage',p.voltage.toFixed(1)+' V');btSet('skin2Voltage',p.voltage.toFixed(1)+' V');
+  $('energy').textContent=p.energy.toFixed(2);
+  $('energyDiag').textContent=p.energy.toFixed(2);
+  $('temp').textContent=p.temperature.toFixed(0);
+  btSet('skin1Temp',p.temperature.toFixed(0)+' °C');btSet('skin2Temp',p.temperature.toFixed(0)+' °C');
+  $('runtime').textContent=fmtTime(p.runtime);
+  $('deviceCap').textContent=p.capacity.toFixed(2);
+  $('backlight').textContent=p.backlight+' s';
+  $('unknownA').textContent=p.unknownA;
+  $('unknownB').textContent=p.unknownB;
+  $('checksum').textContent='0x'+p.checksum.toString(16).padStart(2,'0').toUpperCase();
+  $('deviceName').textContent=device?.name||'DT24PW_BLE'; if($('deviceName2'))$('deviceName2').textContent=device?.name||'DT24PW_BLE';
+  btSet('lastTime',new Date(now).toLocaleTimeString('pt-BR'));
+  samples.push({t:now,v:p.voltage,i:p.current,w:power});if(samples.length>240)samples.shift();
+  $('samples').textContent=samples.length;
+  renderFlow(result.flow,p.current,result.conf);updateSOC(result.flow);recordSOC(now);sessionUpdate(p,now,power);updateAutonomy(p.current,result.flow);scheduleRender();
+  csvRows.push({
+    timestamp:new Date(now).toISOString(),voltage:p.voltage,current:p.current,power,
+    energy:p.energy,temperature:p.temperature,runtime:fmtTime(p.runtime),
+    deviceCapacity:p.capacity,soc:state.soc,flow:result.flow,confidence:result.conf,
+    chargeAh:state.chargeAh,dischargeAh:state.dischargeAh,raw:p.raw
+  });
+  if(csvRows.length>10000)csvRows.shift();
+  $('raw').textContent=p.raw;
+}
+let btLogLines=[],btPacketCount=0,btValidPacketCount=0;
+let bleNotifyEvents=0, bleReadAttempts=0, bleReadSuccess=0, bleProbeRunning=false;
+let bleLastNotifyMs=null, bleLastReadMs=null, bleNoDataTimer=null, bleProbeTimer=null;
+let bleServer=null, bleService=null;
+// V5.23 — buffer de recepção para notificações BLE fragmentadas/concatenadas.
+// O DT24PW usa frames de 36 bytes iniciados por FF 55 01.
+let bleRxBuffer=[];
+// V5.23 — Screen Wake Lock: mantém a tela ligada enquanto o monitor está conectado.
+let wakeLock=null;
+let wakeLockRetryTimer=null;
+let renderFramePending=false;
+function bytesFromDataView(dv){return new Uint8Array(dv.buffer,dv.byteOffset,dv.byteLength)}
+function resetBleRxBuffer(){bleRxBuffer=[]}
+function appendBleRx(chunk){
+  if(chunk?.length) bleRxBuffer.push(...chunk);
+  if(bleRxBuffer.length>256) bleRxBuffer=bleRxBuffer.slice(-128);
+}
+function takeBleFrames(){
+  const frames=[];
+  while(true){
+    let start=-1;
+    for(let i=0;i<=bleRxBuffer.length-3;i++){
+      if(bleRxBuffer[i]===0xFF && bleRxBuffer[i+1]===0x55 && bleRxBuffer[i+2]===0x01){start=i;break}
+    }
+    if(start<0){bleRxBuffer=bleRxBuffer.slice(-2);break}
+    if(start>0) bleRxBuffer=bleRxBuffer.slice(start);
+    if(bleRxBuffer.length<36) break;
+    const frame=bleRxBuffer.slice(0,36);
+    bleRxBuffer=bleRxBuffer.slice(36);
+    frames.push(new Uint8Array(frame));
+  }
+  return frames;
+}
+async function releaseWakeLock(reason='manual'){
+  if(wakeLockRetryTimer){clearTimeout(wakeLockRetryTimer);wakeLockRetryTimer=null}
+  const lock=wakeLock;wakeLock=null;
+  if(lock){
+    try{await lock.release();btLog('WAKE LOCK | liberado | '+reason)}
+    catch(e){btLog('WAKE LOCK | aviso ao liberar | '+(e?.message||e))}
+  }
+}
+async function requestWakeLock(reason='conexão'){
+  if(!connected)return false;
+  if(!('wakeLock' in navigator)){btLog('WAKE LOCK | API indisponível neste navegador');return false}
+  if(document.visibilityState!=='visible')return false;
+  if(wakeLock && !wakeLock.released)return true;
+  try{
+    const lock=await navigator.wakeLock.request('screen');
+    wakeLock=lock;
+    btLog('WAKE LOCK | tela protegida | '+reason);
+    lock.addEventListener('release',()=>{
+      if(wakeLock===lock) wakeLock=null;
+      btLog('WAKE LOCK | liberado pelo sistema');
+      if(connected && document.visibilityState==='visible'){
+        if(wakeLockRetryTimer)clearTimeout(wakeLockRetryTimer);
+        wakeLockRetryTimer=setTimeout(()=>{wakeLockRetryTimer=null;requestWakeLock('reposição após revogação')},1000);
+      }
+    });
+    return true;
+  }catch(e){
+    btLog('WAKE LOCK | não concedido | '+(e?.name||'Error')+' | '+(e?.message||e));
+    return false;
+  }
+}
+function scheduleRender(){
+  if(renderFramePending)return;
+  renderFramePending=true;
+  requestAnimationFrame(()=>{
+    renderFramePending=false;
+    draw();
+    drawSocChart();
+  });
+}
+function propSummary(ch){
+  const p=ch?.properties||{};
+  return ['broadcast','read','writeWithoutResponse','write','notify','indicate','authenticatedSignedWrites','reliableWrite','writableAuxiliaries']
+    .filter(k=>p[k]).join(',') || '(nenhuma exposta)';
+}
+function updateBleSummary(){
+  const el=$('bleSummary'); if(!el)return;
+  const conn=device?.gatt?.connected?'CONECTADO':'desconectado';
+  const age=bleLastNotifyMs?Math.round((Date.now()-bleLastNotifyMs)/1000):null;
+  el.textContent=[
+    'GATT: '+conn,
+    'Característica: '+(characteristic?.uuid||'—'),
+    'Propriedades: '+(characteristic?propSummary(characteristic):'—'),
+    'Notifications: '+bleNotifyEvents,
+    'Leituras FFE1: '+bleReadSuccess+'/'+bleReadAttempts,
+    'Último NOTIFY: '+(bleLastNotifyMs?new Date(bleLastNotifyMs).toLocaleTimeString('pt-BR')+' ('+age+' s atrás)':'nenhum'),
+    'Última leitura: '+(bleLastReadMs?new Date(bleLastReadMs).toLocaleTimeString('pt-BR'):'nenhuma')
+  ].join('\n');
+}
+async function listGattDetails(server,service){
+  try{
+    const services=await server.getPrimaryServices();
+    btLog('GATT DISCOVERY | serviços primários='+services.length);
+    for(const svc of services){
+      btLog('SERVICE | '+svc.uuid+(svc.uuid.toLowerCase()===SERVICE?' [ALVO]':''));
+      try{
+        const chars=await svc.getCharacteristics();
+        btLog('  CHARACTERISTICS='+chars.length);
+        for(const ch of chars){
+          btLog('  CHAR | '+ch.uuid+' | properties='+propSummary(ch));
+          try{
+            const descs=await ch.getDescriptors();
+            if(descs.length) btLog('    DESCRIPTORS='+descs.length+' | '+descs.map(d=>d.uuid).join(', '));
+          }catch(e){btLog('    DESCRIPTORS ERRO | '+(e?.name||'Error')+' | '+(e?.message||e));}
+        }
+      }catch(e){btLog('  CHAR DISCOVERY ERRO | '+(e?.name||'Error')+' | '+(e?.message||e));}
+    }
+  }catch(e){btLog('GATT DISCOVERY ERRO | '+(e?.name||'Error')+' | '+(e?.message||e));}
+}
+async function readFfe1(reason='manual'){
+  if(!characteristic){btLog('READ FFE1 | ignorada: característica não disponível');return false;}
+  bleReadAttempts++; updateBleSummary();
+  btLog('READ FFE1 #'+bleReadAttempts+' | motivo='+reason);
+  try{
+    const dv=await characteristic.readValue();
+    bleReadSuccess++;bleLastReadMs=Date.now();
+    const a=bytesFromDataView(dv);
+    btLog('READ OK | len='+a.length+' | '+hex(a));
+    const p=parsePacket(a);
+    if(p)btLog('READ PACOTE VÁLIDO | V='+p.voltage.toFixed(2)+'V | I='+p.current.toFixed(3)+'A | E='+p.energy.toFixed(2)+'kWh');
+    else btLog('READ OK MAS FORMATO NÃO RECONHECIDO');
+    updateBleSummary(); return true;
+  }catch(e){
+    btLog('READ ERRO | name='+(e?.name||'Error')+' | message='+(e?.message||String(e)));
+    updateBleSummary(); return false;
+  }
+}
+async function reEnableNotifications(){
+  if(!characteristic){btLog('NOTIFY REATIVAR | sem característica');return}
+  try{
+    btLog('NOTIFY REATIVAR | removendo listener anterior');
+    characteristic.removeEventListener('characteristicvaluechanged',onData);
+    characteristic.addEventListener('characteristicvaluechanged',onData);
+    btLog('NOTIFY REATIVAR | chamando startNotifications()');
+    await characteristic.startNotifications();
+    btSet('notifyState','ATIVO');
+    btLog('NOTIFY REATIVAR | OK');
+    await readFfe1('após reativação');
+  }catch(e){btLog('NOTIFY REATIVAR ERRO | '+(e?.name||'Error')+' | '+(e?.message||String(e)));}
+}
+async function deepBleProbe(){
+  if(bleProbeRunning){btLog('PROBE | já em execução');return}
+  bleProbeRunning=true;btLog('===== INÍCIO DIAGNÓSTICO BLE PROFUNDO =====');
+  try{
+    btLog('ENV | protocol='+location.protocol+' | secure='+window.isSecureContext+' | userAgent='+navigator.userAgent);
+    btLog('ENV | bluetooth='+(!!navigator.bluetooth)+' | permissions='+(navigator.permissions?'API disponível':'API indisponível'));
+    btLog('DEVICE | name='+(device?.name||'—')+' | id='+(device?.id||'—')+' | gattConnected='+(device?.gatt?.connected));
+    if(!device?.gatt?.connected || !bleServer){btLog('PROBE PARADO | conecte o DT24PW primeiro');return}
+    btLog('GATT | server.connected='+bleServer.connected+' | service='+bleService?.uuid);
+    btLog('CHAR | uuid='+characteristic?.uuid+' | properties='+propSummary(characteristic));
+    await listGattDetails(bleServer,bleService);
+    await readFfe1('probe inicial');
+    await reEnableNotifications();
+    btLog('PROBE | aguardando NOTIFY por 15 s...');
+    const start=Date.now();
+    while(Date.now()-start<15000){
+      await new Promise(r=>setTimeout(r,3000));
+      btLog('HEARTBEAT | conectado='+(device?.gatt?.connected)+' | notify='+bleNotifyEvents+' | reads='+bleReadSuccess+'/'+bleReadAttempts+' | ultimoNotify='+(bleLastNotifyMs?Math.round((Date.now()-bleLastNotifyMs)/1000)+'s':'nenhum'));
+      updateBleSummary();
+    }
+    if(!bleLastNotifyMs || bleLastNotifyMs<start) btLog('RESULTADO | NENHUM NOTIFY durante a janela de 15 s');
+    else btLog('RESULTADO | NOTIFY recebido; último há '+Math.round((Date.now()-bleLastNotifyMs)/1000)+' s');
+    btLog('===== FIM DIAGNÓSTICO BLE PROFUNDO =====');
+  }catch(e){btLog('PROBE ERRO FATAL | '+(e?.name||'Error')+' | '+(e?.message||String(e)));}
+  finally{bleProbeRunning=false;updateBleSummary()}
+}
+
+function btLog(msg){
+  const stamp=new Date().toLocaleTimeString('pt-BR',{hour12:false});
+  btLogLines.push(stamp+' | '+msg);
+  if(btLogLines.length>120)btLogLines.shift();
+  const el=$('btLog'); if(el)el.textContent=btLogLines.join('\\n')||'Nenhum evento registrado.';
+}
+function btSet(id,value){const el=$(id);if(el)el.textContent=value}
+function btDiagInit(){
+  btSet('btSupport',navigator.bluetooth?'DISPONÍVEL':'INDISPONÍVEL');
+  btSet('secureContext',window.isSecureContext?'SIM':'NÃO');
+  btSet('gattState','desconectado');btSet('notifyState','não iniciado');
+}
+function onData(e){
+  btPacketCount++; bleNotifyEvents++; bleLastNotifyMs=Date.now(); btSet('packetCount',btPacketCount); updateBleSummary();
+  try{
+    const chunk=bytesFromDataView(e.target.value);
+    btLog('NOTIFY #' + btPacketCount + ' | chunk='+chunk.length+' bytes | ' + hex(chunk));
+    appendBleRx(chunk);
+    const frames=takeBleFrames();
+    if(!frames.length){
+      btLog('BLE BUFFER | aguardando frame completo | buffer='+bleRxBuffer.length+' bytes');
+      return;
+    }
+    frames.forEach((a,index)=>{
+      btLog('FRAME #' + (index+1) + '/' + frames.length + ' | len=' + a.length + ' | ' + hex(a));
+      const p=parsePacket(a);
+      if(p){
+        btValidPacketCount++;btSet('validPacketCount',btValidPacketCount);
+        btLog('PACOTE VÁLIDO | V=' + p.voltage.toFixed(2) + 'V | I=' + p.current.toFixed(3) + 'A | E=' + p.energy.toFixed(2) + 'kWh | T=' + p.temperature + 'C');
+        updateUI(p);
+        btLog('UI ATUALIZADA | SOC=' + state.soc.toFixed(2) + '%');
+      }else{
+        btLog('FRAME IGNORADO | formato não reconhecido após sincronização');
+      }
+    });
+  }catch(err){
+    btLog('ERRO PROCESSANDO NOTIFY #' + btPacketCount + ' | name='+(err?.name||'Error')+' | message='+(err?.message||String(err)));
+    console.error('ATORCH onData error',err);
+  }
+}
+
+async function connect(){
+  renderSessionHistory();
+btDiagInit();
+  btLog('INÍCIO | URL=' + location.href);
+  btLog('Web Bluetooth=' + (!!navigator.bluetooth) + ' | isSecureContext=' + window.isSecureContext);
+  if(!navigator.bluetooth){
+    btLog('ERRO CRÍTICO | navigator.bluetooth não existe. Esta página não está em um contexto compatível com Web Bluetooth.');
+    alert('Web Bluetooth não está disponível nesta página.\\n\\nIMPORTANTE: teste pelo endereço HTTPS do Netlify no Chrome. Um arquivo aberto diretamente no celular (content:// ou file://) pode não ter Web Bluetooth.');
+    return;
+  }
+  if(!window.isSecureContext){
+    btLog('ERRO CRÍTICO | contexto NÃO seguro. Use HTTPS.');
+    alert('Esta página não está em contexto seguro. Abra a versão HTTPS do Netlify.');
+    return;
+  }
+  try{
+    history=[];autoFlow='idle';candidateFlow='idle';candidateCount=0;seededInitialFlow=false;confidence='—';stableIdleSince=null;lastVoltage=null;socAnchorInitialized=false;resetBleRxBuffer();
+    btPacketCount=0;btValidPacketCount=0;bleNotifyEvents=0;bleReadAttempts=0;bleReadSuccess=0;bleLastNotifyMs=null;bleLastReadMs=null;btSet('packetCount','0');btSet('validPacketCount','0');updateBleSummary();
+    btLog('SOLICITANDO dispositivo BLE...');
+    device=await navigator.bluetooth.requestDevice({
+      filters:[{services:[SERVICE]},{namePrefix:'DT24PW'}],
+      optionalServices:[SERVICE]
+    });
+    btLog('DISPOSITIVO SELECIONADO | name='+(device.name||'(sem nome)')+' | id='+(device.id||'(sem id)'));
+    device.addEventListener('gattserverdisconnected',()=>{
+      btLog('EVENTO gattserverdisconnected | conectado=false');
+      finalizeSession('desconexão BLE');
+      releaseWakeLock('desconexão BLE');
+      resetBleRxBuffer();
+      characteristic=null;lastSampleMs=null;
+      btSet('gattState','desconectado');btSet('notifyState','encerrado');
+      setStatus(false,'Desconectado');
+    });
+    btLog('CONECTANDO GATT...');
+    const server=await device.gatt.connect();
+    bleServer=server;
+    btSet('gattState',server.connected?'conectado':'desconectado');
+    btLog('GATT CONNECT OK | connected='+server.connected);
+    btLog('BUSCANDO serviço '+SERVICE+'...');
+    const service=await server.getPrimaryService(SERVICE);
+    bleService=service;
+    btLog('SERVIÇO OK | '+service.uuid);
+    btLog('BUSCANDO característica '+CHAR+'...');
+    characteristic=await service.getCharacteristic(CHAR);
+    btLog('CARACTERÍSTICA OK | '+characteristic.uuid+' | properties='+propSummary(characteristic));
+    updateBleSummary();
+    characteristic.addEventListener('characteristicvaluechanged',onData);
+    btLog('ATIVANDO notifications...');
+    await characteristic.startNotifications();
+    btSet('notifyState','ATIVO');
+    btLog('NOTIFICATIONS OK');
+    updateBleSummary();
+    // Primeira leitura: se o periférico suportar READ, ela ajuda a separar
+    // ausência de dados do periférico de falha do fluxo de notifications.
+    await readFfe1('teste automático pós-conexão');
+    bleNoDataTimer=setTimeout(()=>{
+      if(connected && bleNotifyEvents===0) btLog('ALERTA | 15 s conectados e 0 NOTIFY recebidos');
+      updateBleSummary();
+    },15000);
+    setStatus(true,'Conectado');
+    await requestWakeLock('conexão BLE');
+    $('deviceName').textContent=device.name||'DT24PW';
+    if($('deviceName2'))$('deviceName2').textContent=device.name||'DT24PW';
+    btLog('CONEXÃO PRONTA | aguardando pacotes...');
+  }catch(err){
+    btLog('ERRO | name='+(err?.name||'UnknownError')+' | message='+(err?.message||String(err)));
+    console.error(err);
+    setStatus(false,'Desconectado');
+    btSet('gattState','erro');btSet('notifyState','erro');
+    if(err?.name!=='NotFoundError')alert('Falha na conexão Bluetooth.\\n\\n'+(err?.message||err.name||err));
+  }
+}
+async function disconnect(){
+  btLog('DESCONECTANDO...');
+  finalizeSession('desconectado pelo usuário');
+  releaseWakeLock('desconexão manual');
+  resetBleRxBuffer();
+  if(bleNoDataTimer){clearTimeout(bleNoDataTimer);bleNoDataTimer=null}
+  bleServer=null;bleService=null;bleLastNotifyMs=null;updateBleSummary();
+  try{if(characteristic)await characteristic.stopNotifications();btLog('Notifications interrompidas.')}catch(e){btLog('Aviso ao parar notifications: '+(e?.message||e))}
+  if(device?.gatt?.connected){device.gatt.disconnect();btLog('GATT disconnect solicitado.')}
+  lastSampleMs=null;setStatus(false,'Desconectado');btSet('gattState','desconectado');btSet('notifyState','encerrado');
+}
+function exportCSV(){
+  if(!csvRows.length){alert('Ainda não há dados para exportar.');return}
+  const head='timestamp,voltage_V,current_A,power_W,energy_kWh,temperature_C,runtime,device_capacity_Ah,soc_percent,flow,confidence,charge_Ah,discharge_Ah,raw_packet';
+  const lines=csvRows.map(r=>[
+    r.timestamp,r.voltage,r.current,r.power,r.energy,r.temperature,r.runtime,r.deviceCapacity,
+    r.soc,r.flow,r.confidence,r.chargeAh,r.dischargeAh,'"'+r.raw+'"'
+  ].join(','));
+  const blob=new Blob([head+'\n'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='atorch-monitor-v5.19.csv';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function clearSession(){samples=[];csvRows=[];history=[];autoFlow='idle';candidateFlow='idle';candidateCount=0;seededInitialFlow=false;confidence='—';lastSampleMs=null;stableIdleSince=null;socAnchorInitialized=false;$('samples').textContent='0';$('raw').textContent='Nenhum pacote recebido.';scheduleRender()}
+function setMode(mode){state.mode=mode;saveState();updateSOC(autoFlow);renderFlow(autoFlow,0,state.mode==='auto'?confidence:'manual')}
+function saveSettings(){
+  const cap=Math.max(1,Number($('batteryInput').value)||200);
+  const soc=Math.min(100,Math.max(0,Number($('socInput').value)||0));
+  const minV=Math.min(13.5,Math.max(10,Number($('minDischargeVoltage').value)||11.8));
+  state.batteryCap=cap;state.soc=soc;state.minDischargeVoltage=minV;state.chargeAh=0;state.dischargeAh=0;history=[];autoFlow='idle';lastSampleMs=null;stableIdleSince=null;socAnchorInitialized=false;
+  saveState();updateSOC(autoFlow);alert('Configuração salva e cálculo do SOC reiniciado.');
+}
+function calibrateFull(){state.soc=100;state.chargeAh=0;state.dischargeAh=0;lastSampleMs=null;stableIdleSince=null;socAnchorInitialized=false;saveState();$('socInput').value='100.0';updateSOC(autoFlow);alert('SOC calibrado para 100%.')}
+function calibrateZero(){state.soc=0;state.chargeAh=0;state.dischargeAh=0;lastSampleMs=null;stableIdleSince=null;socAnchorInitialized=false;saveState();$('socInput').value='0.0';updateSOC(autoFlow);alert('SOC calibrado para 0%.')}
+let socRangeHours=1;
+function setSocRange(hours){
+  socRangeHours=hours;
+  document.querySelectorAll('.rangeBtn').forEach(b=>b.classList.toggle('active',Number(b.dataset.hours)===hours));
+  scheduleRender();
+}
+function drawSocChart(){
+  const c=$('socChart'),d=c.getBoundingClientRect(),ratio=devicePixelRatio||1;
+  c.width=Math.max(1,d.width*ratio);c.height=Math.max(1,d.height*ratio);
+  const x=c.getContext('2d');x.setTransform(ratio,0,0,ratio,0,0);
+  const w=d.width,h=d.height;x.clearRect(0,0,w,h);
+  const cutoff=Date.now()-socRangeHours*3600000;
+  const data=socHistory.filter(p=>p.t>=cutoff);
+  $('socChartNow').textContent=state.soc.toFixed(1)+'%';
+  if(data.length<2){
+    x.fillStyle='#667995';x.font='13px system-ui';x.fillText('Aguardando histórico do SOC…',18,h/2);return;
+  }
+  const L=38,R=10,T=15,B=27;
+  x.strokeStyle='#213550';x.lineWidth=1;
+  for(let k=0;k<=4;k++){
+    const y=T+k*(h-T-B)/4;
+    x.beginPath();x.moveTo(L,y);x.lineTo(w-R,y);x.stroke();
+    x.fillStyle='#71829b';x.font='10px system-ui';x.fillText(String(100-k*25)+'%',4,y+3);
+  }
+  const first=data[0].t,lastT=data[data.length-1].t,span=Math.max(1,lastT-first);
+  const px=t=>L+(t-first)*(w-L-R)/span;
+  const py=v=>T+(100-v)*(h-T-B)/100;
+  // A lacuna superior a 90 s indica ausência de monitoramento. Não ligamos
+  // pontos de sessões diferentes e, portanto, não inventamos dados no intervalo.
+  const segments=[];let seg=[data[0]];
+  for(let i=1;i<data.length;i++){
+    if(data[i].t-data[i-1].t>90000){segments.push(seg);seg=[data[i]]}else seg.push(data[i]);
+  }
+  segments.push(seg);
+  for(const part of segments){
+    if(part.length<2){
+      const p=part[0];x.fillStyle='#38df86';x.beginPath();x.arc(px(p.t),py(p.s),3,0,Math.PI*2);x.fill();continue;
+    }
+    x.beginPath();
+    part.forEach((p,i)=>{const X=px(p.t),Y=py(Math.max(0,Math.min(100,p.s)));i?x.lineTo(X,Y):x.moveTo(X,Y)});
+    x.lineTo(px(part[part.length-1].t),h-B);x.lineTo(px(part[0].t),h-B);x.closePath();
+    const grad=x.createLinearGradient(0,T,0,h-B);grad.addColorStop(0,'rgba(56,223,134,.24)');grad.addColorStop(1,'rgba(56,223,134,.02)');
+    x.fillStyle=grad;x.fill();
+    x.beginPath();part.forEach((p,i)=>{const X=px(p.t),Y=py(Math.max(0,Math.min(100,p.s)));i?x.lineTo(X,Y):x.moveTo(X,Y)});
+    x.strokeStyle='#38df86';x.lineWidth=2.5;x.stroke();
+    const last=part[part.length-1];x.fillStyle='#38df86';x.beginPath();x.arc(px(last.t),py(last.s),4,0,Math.PI*2);x.fill();
+  }
+  if(segments.length>1){
+    x.fillStyle='#71829b';x.font='9px system-ui';x.fillText('sem dados',Math.min(w-58,px(segments[0][segments[0].length-1].t)+4),T+12);
+  }
+  x.fillStyle='#71829b';x.font='10px system-ui';
+  x.fillText(new Date(data[0].t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),L,h-7);
+  const endLabel=new Date(data[data.length-1].t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  x.fillText(endLabel,w-44,h-7);
+}
+function setRealtimeMetric(metric){
+  if(!['voltage','current','power'].includes(metric))return;
+  realtimeMetric=metric;
+  document.querySelectorAll('.rtTab').forEach(b=>b.classList.toggle('active',b.dataset.metric===metric));
+  scheduleRender();
+}
+function draw(){
+  const c=$('chart'),d=c.getBoundingClientRect(),ratio=devicePixelRatio||1;
+  c.width=Math.max(1,d.width*ratio);c.height=Math.max(1,d.height*ratio);
+  const x=c.getContext('2d');x.setTransform(ratio,0,0,ratio,0,0);
+  const w=d.width,h=d.height;x.clearRect(0,0,w,h);
+  if(samples.length<2){
+    x.fillStyle='#667995';x.font='13px system-ui';x.fillText('Aguardando dados do DT24PW…',18,h/2);
+    btSet('rtMin','—');btSet('rtMax','—');return;
+  }
+  const cfg={
+    voltage:{label:'Tensão',unit:'V',color:'#55dbea',get:s=>s.v},
+    current:{label:'Corrente',unit:'A',color:'#7e9cff',get:s=>s.i},
+    power:{label:'Potência',unit:'W',color:'#ffd06b',get:s=>s.w}
+  }[realtimeMetric];
+  const vals=samples.map(cfg.get).filter(Number.isFinite);
+  let min=Math.min(...vals),max=Math.max(...vals);
+  if(realtimeMetric==='current'||realtimeMetric==='power') min=Math.min(0,min);
+  if(Math.abs(max-min)<0.001){const pad=Math.max(0.1,Math.abs(max)*0.02);min-=pad;max+=pad}
+  else{
+    const pad=(max-min)*0.08;
+    min-=pad;max+=pad;
+    if(realtimeMetric==='current'||realtimeMetric==='power')min=Math.max(0,min);
+  }
+  btSet('rtMin',formatChartValue(min,cfg.unit));btSet('rtMax',formatChartValue(max,cfg.unit));
+  const latest=vals[vals.length-1];
+  const currentLabel=formatChartValue(latest,cfg.unit);
+  const header=$('realtimeCard')?.querySelector('.cardHeader>span');
+  if(header)header.textContent=samples.length+' amostras · '+cfg.label+' '+currentLabel;
+  const L=42,R=10,T=12,B=8,px=i=>L+i*(w-L-R)/(samples.length-1),py=v=>T+(max-v)*(h-T-B)/(max-min);
+  x.strokeStyle='#213550';x.lineWidth=1;
+  for(let k=0;k<5;k++){
+    const y=T+k*(h-T-B)/4;
+    x.beginPath();x.moveTo(L,y);x.lineTo(w-R,y);x.stroke();
+    const tick=max-(max-min)*k/4;
+    x.fillStyle='#71829b';x.font='9px system-ui';x.fillText(formatChartValue(tick,cfg.unit),3,y+3);
+  }
+  x.beginPath();
+  samples.forEach((s,i)=>{const X=px(i),Y=py(cfg.get(s));i?x.lineTo(X,Y):x.moveTo(X,Y)});
+  x.strokeStyle=cfg.color;x.lineWidth=2.5;x.stroke();
+  const last=samples[samples.length-1],lastY=py(cfg.get(last));
+  x.fillStyle=cfg.color;x.beginPath();x.arc(px(samples.length-1),lastY,4,0,Math.PI*2);x.fill();
+}
+function formatChartValue(v,unit){
+  if(!Number.isFinite(v))return '—';
+  const digits=unit==='V'?1:unit==='A'?1:0;
+  return v.toFixed(digits)+' '+unit;
+}
+$('connect').onclick=connect;$('disconnect').onclick=disconnect;$('export').onclick=exportCSV;$('clear').onclick=clearSession;
+$('clearSocHistory').onclick=()=>{if(confirm('Apagar todo o histórico do SOC?')){socHistory=[];localStorage.removeItem('atorch_soc_history_v55');scheduleRender();}};
+$('clearSessionHistory').onclick=()=>{if(confirm('Apagar todo o histórico de sessões?')){sessionHistory=[];saveSessionHistory();renderSessionHistory();}};
+$('saveSettings').onclick=saveSettings;$('calFull').onclick=calibrateFull;$('calZero').onclick=calibrateZero;
+$('toggleBleDiag').onclick=()=>{const sec=$('bleDiagSection');const btn=$('toggleBleDiag');if(!sec||!btn)return;const hidden=sec.classList.toggle('bleDiagHidden');btn.textContent=hidden?'Mostrar diagnóstico BLE avançado':'Ocultar diagnóstico BLE avançado';btn.classList.toggle('active',!hidden);if(!hidden)sec.scrollIntoView({behavior:'smooth',block:'start'});};
+$('autoBtn').onclick=()=>setMode('auto');$('chargeBtn').onclick=()=>setMode('charge');$('dischargeBtn').onclick=()=>setMode('discharge');
+setStatus(false,'Desconectado');updateSOC('idle');renderFlow('idle',0,state.mode==='auto'?'—':'manual');scheduleRender();
+btDiagInit();
+$('clearBtLog').onclick=()=>{btLogLines=[];btLog('LOG LIMPO');btPacketCount=0;btValidPacketCount=0;btSet('packetCount','0');btSet('validPacketCount','0')};
+$('bleProbe').onclick=deepBleProbe;$('bleRead').onclick=()=>readFfe1('botão manual');$('bleNotify').onclick=reEnableNotifications;updateBleSummary();
+$('copyBtLog').onclick=async()=>{
+  const text=btLogLines.join('\n');
+  if(!text){alert('Não há log para copiar.');return}
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+      btLog('COPIAR LOG | Clipboard API OK');
+      alert('Log copiado.');
+      return;
+    }
+  }catch(e){btLog('COPIAR LOG | Clipboard API falhou: '+(e?.message||e));}
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.setAttribute('readonly','');
+    ta.style.position='fixed';ta.style.top='0';ta.style.left='0';
+    ta.style.width='1px';ta.style.height='1px';ta.style.opacity='0.01';
+    document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);
+    const ok=document.execCommand('copy');ta.remove();
+    if(ok){btLog('COPIAR LOG | fallback execCommand OK');alert('Log copiado.');return;}
+    btLog('COPIAR LOG | execCommand retornou falso');
+  }catch(e){btLog('COPIAR LOG | fallback execCommand falhou: '+(e?.message||e));}
+  // Fallback Android robusto: mantém o texto na própria página para seleção manual.
+  const old=$('copyFallback'); if(old)old.remove();
+  const box=document.createElement('div');box.id='copyFallback';
+  box.style.cssText='position:fixed;z-index:9999;inset:12px;background:#071426;border:1px solid #315477;border-radius:14px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px';
+  const title=document.createElement('div');title.textContent='Copiar log manualmente';title.style.cssText='font-weight:800;color:#fff;font-size:15px';
+  const help=document.createElement('div');help.textContent='Toque em “Selecionar tudo” e depois em “Copiar” no menu do Android.';help.style.cssText='color:#aebfd3;font-size:11px;line-height:1.4';
+  const ta=document.createElement('textarea');ta.value=text;ta.readOnly=true;ta.style.cssText='flex:1;width:100%;box-sizing:border-box;background:#030a13;color:#d8e6f5;border:1px solid #203a58;border-radius:10px;padding:10px;font:11px/1.45 monospace;resize:none';
+  const actions=document.createElement('div');actions.style.cssText='display:flex;gap:8px';
+  const selectBtn=document.createElement('button');selectBtn.textContent='Selecionar tudo';selectBtn.style.cssText='flex:1;padding:11px;border-radius:9px;border:1px solid #315477;background:#102943;color:#fff;font-weight:800';
+  const closeBtn=document.createElement('button');closeBtn.textContent='Fechar';closeBtn.style.cssText='padding:11px 16px;border-radius:9px;border:1px solid #315477;background:#071426;color:#fff;font-weight:800';
+  selectBtn.onclick=()=>{ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);};
+  closeBtn.onclick=()=>box.remove();actions.append(selectBtn,closeBtn);box.append(title,help,ta,actions);document.body.appendChild(box);
+  selectBtn.click();
+  btLog('COPIAR LOG | fallback manual exibido');
+};
+btLog('APP INICIADO | V5.24.6 | SERVICE='+SERVICE+' | CHAR='+CHAR);btLog('DIAGNÓSTICO | BLE profundo: discovery + READ + notifications + heartbeat');btLog('V5.24.6 | buffer BLE + Screen Wake Lock + renderização via requestAnimationFrame');updateBleSummary();
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible' && connected) requestWakeLock('retorno ao primeiro plano');
+});
+
+window.addEventListener('error',e=>{
+  btLog('ERRO JAVASCRIPT | '+(e.message||'erro desconhecido')+' | '+(e.filename||'')+':'+(e.lineno||''));
+});
+window.addEventListener('unhandledrejection',e=>{
+  const r=e.reason;btLog('PROMISE REJEITADA | '+(r?.message||String(r)));
+});
+window.addEventListener('resize',()=>scheduleRender());
+</script>
+</body>
+</html>
