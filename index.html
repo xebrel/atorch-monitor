@@ -372,6 +372,56 @@ body{background:#061221;color:#f5f8fc}
   content:" • Skin 1";
 }
 
+
+/* V5.24.21 — organização da interface */
+.bottomNav{grid-template-columns:repeat(4,1fr);gap:8px}
+.bottomNav button{min-height:68px;cursor:pointer}
+.bottomNav button.active{border-color:#27a9ff;background:linear-gradient(145deg,#0b2944,#092038);color:#eef8ff;box-shadow:0 0 0 1px rgba(39,169,255,.12) inset}
+.utilityPanel{margin-top:13px;display:none}
+.utilityPanel.open{display:block}
+.utilityTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.utilityTab{border:1px solid #1a3855;border-radius:12px;background:#081a2d;color:#aebed0;padding:11px;font-size:12px;font-weight:850;cursor:pointer}
+.utilityTab.active{border-color:#27a9ff;color:#e9f8ff;background:rgba(39,169,255,.09)}
+.utilityView{display:none}
+.utilityView.active{display:block}
+.utilityClose{width:100%;margin-top:10px}
+@media(max-width:520px){.bottomNav button{font-size:9px}.utilityTabs{grid-template-columns:1fr 1fr}}
+
+
+
+/* V5.24.21 — correção visual: ícones e alinhamento dos cartões */
+svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.actionIcon{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px}
+.actionIcon svg{width:18px;height:18px}
+.connectBtn,.ghostBtn{display:flex;align-items:center;justify-content:center;gap:8px}
+.skinInfo{align-content:start}
+.flowBanner{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:5px 8px;border-radius:11px;background:rgba(8,25,42,.72);border:1px solid rgba(34,57,87,.55)}
+.flowBannerIcon{font-size:21px;font-weight:900;color:#46df91;line-height:1}
+.skin.discharge .flowBannerIcon{color:#ff6674}
+.flowBanner .skinState{margin:0;text-align:left;font-size:15px;line-height:1.1}
+.flowBanner small{display:block;color:#8298b0;font-size:10px;margin-top:2px}
+.skinMetric{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;justify-content:initial;gap:8px;text-align:left}
+.skinMetric .metricIcon{width:20px;height:20px;margin:0;display:flex;align-items:center;justify-content:center}
+.skinMetric .metricIcon svg{width:18px;height:18px}
+.skinMetric>span:not(.metricIcon){min-width:0}
+.skinMetric strong{text-align:right}
+.skinMeta{margin-top:1px}
+.navIcon{display:flex;align-items:center;justify-content:center;width:22px;height:22px}
+.navIcon svg{width:20px;height:20px}
+.miniIcon svg{width:20px;height:20px}
+
+@media(max-width:620px){
+  .topControls{grid-template-columns:1fr 1fr;gap:9px}
+  .connectBtn,.ghostBtn{min-height:54px;padding:11px 8px;font-size:13px}
+  .statusHero{padding:10px}
+  .skin{padding:8px 7px 18px}
+  .skinInfo{grid-template-columns:1fr 1fr;gap:7px}
+  .flowBanner{min-height:46px}
+  .skinMetric{min-height:58px;padding:8px 9px}
+  .skinMetric span{font-size:10px}
+  .skinMetric strong{font-size:14px}
+}
+
 </style>
 </head>
 <body>
@@ -379,7 +429,7 @@ body{background:#061221;color:#f5f8fc}
   <header class="appHeader">
     <div class="brandBlock">
       <div class="logoMark">⚡</div>
-      <div><div class="brandName">ATORCH <span class="versionTag">V5.24.10</span></div><div class="brandSub">DT24PW Monitor</div></div>
+      <div><div class="brandName">ATORCH <span class="versionTag">V5.24.21</span></div><div class="brandSub">DT24PW Monitor</div></div>
     </div>
     <div class="btStatus"><span class="btIcon">⌁</span><span id="dot" class="btDot"></span><div><b id="statusText">Desconectado</b><small id="deviceName">DT24PW_BLE</small></div></div>
     <button class="moreBtn" onclick="alert('ATORCH Monitor V5.23\\nMonitoramento local via Web Bluetooth.')">⋮</button>
@@ -387,10 +437,8 @@ body{background:#061221;color:#f5f8fc}
 
   <main class="dashboard">
     <section class="topControls">
-      <button id="connect" class="connectBtn">Conectar DT24PW</button>
-      <button id="disconnect" class="ghostBtn">Desconectar</button>
-      <button id="export" class="ghostBtn">Exportar CSV</button>
-      <button id="clear" class="ghostBtn">Limpar sessão</button>
+      <button id="connect" class="connectBtn"><span class="actionIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5h6v6"/><path d="m19 5-8 8"/><path d="M19 13v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/></svg></span>Conectar DT24PW</button>
+      <button id="disconnect" class="ghostBtn"><span class="actionIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m9 9 6 6M15 9l-6 6"/></svg></span>Desconectar</button>
     </section>
 
     <section id="bleDiagSection" class="card btLogCard bleDiagHidden">
@@ -430,11 +478,11 @@ body{background:#061221;color:#f5f8fc}
             </div>
           </div>
           <div class="skinInfo">
-            <div id="skin1State" class="skinState">EM REPOUSO</div>
-            <div class="skinMetric voltage"><span class="metricIcon">ϟ</span><span>Tensão</span><strong id="skin1Voltage">--.- V</strong></div>
-            <div class="skinMetric current"><span class="metricIcon">↔</span><span>Corrente</span><strong id="skin1Current">0.0 A</strong></div>
-            <div class="skinMetric power"><span class="metricIcon">▥</span><span>Potência</span><strong id="skin1Power">0 W</strong></div>
-            <div class="skinMetric temp"><span class="metricIcon">♨</span><span>Temperatura</span><strong id="skin1Temp">-- °C</strong></div>
+            <div class="flowBanner"><span class="flowBannerIcon" id="skin1FlowIcon">↔</span><div><div id="skin1State" class="skinState">EM REPOUSO</div><small id="skin1FlowHint">Bateria em repouso</small></div></div>
+            <div class="skinMetric voltage"><span class="metricIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 10-13h-7z"/></svg></span><span>Tensão</span><strong id="skin1Voltage">--.- V</strong></div>
+            <div class="skinMetric current"><span class="metricIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/></svg></span><span>Corrente</span><strong id="skin1Current">0.0 A</strong></div>
+            <div class="skinMetric power"><span class="metricIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 16V8m4 8V8m4 8V8"/></svg></span><span>Potência</span><strong id="skin1Power">0 W</strong></div>
+            <div class="skinMetric temp"><span class="metricIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a5 5 0 1 0 4 0Z"/><path d="M12 12v5"/></svg></span><span>Temperatura</span><strong id="skin1Temp">-- °C</strong></div>
             <div class="skinMeta"><span>Capacidade configurada <strong id="skin1Cap">200 Ah</strong></span><span>Banco <strong id="skin1Bank">200 Ah</strong></span></div>
           </div>
         </div>
@@ -452,11 +500,11 @@ body{background:#061221;color:#f5f8fc}
             </div>
           </div>
           <div class="skinInfo">
-            <div id="skin2State" class="skinState">EM REPOUSO</div>
-            <div class="skinMetric voltage"><span class="metricIcon">ϟ</span><span>Tensão</span><strong id="skin2Voltage">--.- V</strong></div>
-            <div class="skinMetric current"><span class="metricIcon">↔</span><span>Corrente</span><strong id="skin2Current">0.0 A</strong></div>
-            <div class="skinMetric power"><span class="metricIcon">▥</span><span>Potência</span><strong id="skin2Power">0 W</strong></div>
-            <div class="skinMetric temp"><span class="metricIcon">♨</span><span>Temperatura</span><strong id="skin2Temp">-- °C</strong></div>
+            <div class="flowBanner"><span class="flowBannerIcon" id="skin2FlowIcon">↔</span><div><div id="skin2State" class="skinState">EM REPOUSO</div><small id="skin2FlowHint">Bateria em repouso</small></div></div>
+            <div class="skinMetric voltage"><span class="metricIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 10-13h-7z"/></svg></span><span>Tensão</span><strong id="skin2Voltage">--.- V</strong></div>
+            <div class="skinMetric current"><span class="metricIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/></svg></span><span>Corrente</span><strong id="skin2Current">0.0 A</strong></div>
+            <div class="skinMetric power"><span class="metricIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 16V8m4 8V8m4 8V8"/></svg></span><span>Potência</span><strong id="skin2Power">0 W</strong></div>
+            <div class="skinMetric temp"><span class="metricIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a5 5 0 1 0 4 0Z"/><path d="M12 12v5"/></svg></span><span>Temperatura</span><strong id="skin2Temp">-- °C</strong></div>
             <div class="skinMeta"><span>Capacidade configurada <strong id="skin2Cap">200 Ah</strong></span><span>Banco <strong id="skin2Bank">200 Ah</strong></span></div>
           </div>
         </div>
@@ -466,10 +514,10 @@ body{background:#061221;color:#f5f8fc}
     </section>
 
     <section class="miniGrid">
-      <div class="miniCard"><span class="miniIcon green">▣</span><small>Capacidade real</small><strong><span id="batteryCap2">200</span> Ah</strong></div>
-      <div class="miniCard"><span class="miniIcon green">↥</span><small>Ah em carga</small><strong id="chargeAh">0.000</strong><em>Ah</em></div>
-      <div class="miniCard"><span class="miniIcon red">↧</span><small>Ah em descarga</small><strong id="dischargeAh">0.000</strong><em>Ah</em></div>
-      <div class="miniCard"><span class="miniIcon">◷</span><small>Estado</small><strong><span id="flowPill" class="pill">Repouso</span></strong></div>
+      <div class="miniCard"><span class="miniIcon green"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 12h8M8 15h5"/></svg></span><small>Capacidade real</small><strong><span id="batteryCap2">200</span> Ah</strong></div>
+      <div class="miniCard"><span class="miniIcon green"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m7 10 5-5 5 5"/><path d="M5 19h14"/></svg></span><small>Ah em carga</small><strong id="chargeAh">0.000</strong><em>Ah</em></div>
+      <div class="miniCard"><span class="miniIcon red"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="m7 14 5 5 5-5"/><path d="M5 5h14"/></svg></span><small>Ah em descarga</small><strong id="dischargeAh">0.000</strong><em>Ah</em></div>
+      <div class="miniCard"><span class="miniIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg></span><small>Estado</small><strong><span id="flowPill" class="pill">Repouso</span></strong></div>
     </section>
     <section class="estimateGrid">
       <div class="estimateCard discharge">
@@ -547,46 +595,93 @@ body{background:#061221;color:#f5f8fc}
       <div class="note">O SOC usa coulomb counting como base. A tensão é usada apenas como referência auxiliar para evitar que a tensão elevada durante a carga ou a queda momentânea ao ligar o inversor produzam um SOC artificial.</div>
     </section>
 
-    <section id="settingsSection" class="card settings">
-      <div class="cardHeader"><h2>Configurações</h2></div>
-      <div class="settingsGrid">
-        <div class="field"><label>Capacidade real do banco (Ah)</label><input id="batteryInput" type="number" min="1" max="2000" step="1" value="200"></div>
-        <div class="field"><label>SOC inicial (%)</label><input id="socInput" type="number" min="0" max="100" step="0.1" value="100"></div>
-        <div class="field"><label>Tensão mínima para estimativa de descarga (V)</label><input id="minDischargeVoltage" type="number" min="10" max="13.5" step="0.1" value="11.8"></div>
-      </div>
-      <div class="mode">Modo de detecção do sentido</div>
-      <div class="modeBtns"><button id="autoBtn" class="active">Automático</button><button id="dischargeBtn">− Descarga</button><button id="chargeBtn">+ Carga</button></div>
-      <div class="settingsActions"><button id="saveSettings" class="connectBtn">Salvar e reiniciar SOC</button><button id="calFull" class="ghostBtn">Calibrar 100%</button><button id="calZero" class="ghostBtn">Calibrar 0%</button></div>
-      <button id="toggleBleDiag" class="ghostBtn bleDiagToggle">Mostrar diagnóstico BLE avançado</button>
-    </section>
-
-    <section id="diagSection" class="card diag">
-      <div class="cardHeader"><h2>Informações do equipamento</h2></div>
-      <div class="diagGrid">
-        <div class="row"><span>Dispositivo</span><strong id="deviceName2">DT24PW_BLE</strong></div>
-        <div class="row"><span>Pacote</span><strong>01 / 02 / DC</strong></div>
-        <div class="row"><span>Energia DT24PW</span><strong><span id="energyDiag">—</span> kWh</strong></div>
-        <div class="row"><span>Capacidade DT24PW</span><strong><span id="deviceCap">—</span> Ah</strong></div>
-        <div class="row"><span>Backlight</span><strong id="backlight">—</strong></div>
-        <div class="row"><span>Campo 20–23</span><strong id="unknownA">—</strong></div>
-        <div class="row"><span>Campo 31–34</span><strong id="unknownB">—</strong></div>
-        <div class="row"><span>Checksum</span><strong id="checksum">—</strong></div>
-      </div>
-      <div id="raw" class="raw">Nenhum pacote recebido.</div>
-    </section>
-
-    <nav class="bottomNav">
-      <button onclick="document.getElementById('settingsSection').scrollIntoView({behavior:'smooth'})"><b>⚙</b><span>Configurações</span></button>
-      <button onclick="document.getElementById('export').click()"><b>▤</b><span>Logs CSV</span></button>
-      <button onclick="document.getElementById('realtimeCard').scrollIntoView({behavior:'smooth'})"><b>▥</b><span>Estatísticas</span></button>
-      <button onclick="document.getElementById('sessionHistory').scrollIntoView({behavior:'smooth'})"><b>◷</b><span>Histórico</span></button>
-      <button onclick="alert('ATORCH Monitor V5.23\\n\\nO SOC é estimado por coulomb counting e refinado com o comportamento da tensão. A autonomia de descarga usa uma tensão mínima configurável como limite conservador.\\n\\nBanco configurado: 200 Ah.')"><b>?</b><span>Ajuda</span></button>
+    <nav class="bottomNav" id="bottomNav">
+      <button id="navHome" class="active" onclick="openUtility('home')"><b class="navIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></b><span>Início</span></button>
+      <button id="navHistory" onclick="openUtility('history')"><b class="navIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg></b><span>Histórico</span></button>
+      <button id="navSettings" onclick="openUtility('settings')"><b class="navIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.2-1.7l2-1.1-2-3.4-2 1.1a7 7 0 0 0-2.9-1.7V3h-4v2.2A7 7 0 0 0 5 6.9L3 5.8l-2 3.4 2 1.1A7 7 0 0 0 3 12c0 .6.1 1.2.2 1.7l-2 1.1 2 3.4 2-1.1a7 7 0 0 0 2.9 1.7V21h4v-2.2a7 7 0 0 0 2.9-1.7l2 1.1 2-3.4-2-1.1c.1-.5.2-1.1.2-1.7Z"/></svg></b><span>Configurações</span></button>
+      <button id="navMore" onclick="openUtility('more')"><b class="navIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg></b><span>Mais</span></button>
     </nav>
-    <section class="card" id="socDiagCard" style="margin-top:12px;display:block">
-      <div class="cardHeader"><h2>🔎 Diagnóstico do SOC</h2><span>somente para validação</span></div>
-      <div id="socDiag" style="font:13px/1.55 monospace;color:#b8c8d9">Aguardando dados…</div>
+
+    <section id="utilityPanel" class="utilityPanel">
+      <div class="utilityTabs">
+        <button id="utilitySettingsTab" class="utilityTab" onclick="showUtilityView('settings')">⚙ Configurações</button>
+        <button id="utilityMoreTab" class="utilityTab active" onclick="showUtilityView('more')">••• Mais ferramentas</button>
+      </div>
+
+      <div id="utilityHomeView" class="utilityView active">
+        <section class="card" style="padding:16px">
+          <div class="cardHeader"><h2>Início</h2><span>monitoramento</span></div>
+          <div class="note">Use o menu inferior para acessar histórico, configurações e ferramentas de diagnóstico. As ferramentas de validação ficam fora da tela principal para manter o monitoramento limpo.</div>
+        </section>
+      </div>
+
+      <div id="utilitySettingsView" class="utilityView">
+        <section id="settingsSection" class="card settings">
+          <div class="cardHeader"><h2>Configurações</h2><span>ajustes do banco</span></div>
+          <div class="settingsGrid">
+            <div class="field"><label>Capacidade real do banco (Ah)</label><input id="batteryInput" type="number" min="1" max="2000" step="1" value="200"></div>
+            <div class="field"><label>SOC inicial (%)</label><input id="socInput" type="number" min="0" max="100" step="0.1" value="100"></div>
+            <div class="field"><label>Tensão mínima para estimativa de descarga (V)</label><input id="minDischargeVoltage" type="number" min="10" max="13.5" step="0.1" value="11.8"></div>
+          </div>
+          <div class="mode">Modo de detecção do sentido</div>
+          <div class="modeBtns"><button id="autoBtn" class="active">Automático</button><button id="dischargeBtn">− Descarga</button><button id="chargeBtn">+ Carga</button></div>
+          <div class="settingsActions"><button id="saveSettings" class="connectBtn">Salvar e reiniciar SOC</button><button id="calFull" class="ghostBtn">Calibrar 100%</button><button id="calZero" class="ghostBtn">Calibrar 0%</button></div>
+          <button id="toggleBleDiag" class="ghostBtn bleDiagToggle">Mostrar diagnóstico BLE avançado</button>
+        </section>
+      </div>
+
+      <div id="utilityHistoryView" class="utilityView">
+        <section class="card" style="padding:16px">
+          <div class="cardHeader"><h2>Histórico</h2><span>sessões e estatísticas</span></div>
+          <div class="settingsActions"><button class="connectBtn" onclick="document.getElementById('sessionHistory').scrollIntoView({behavior:'smooth'})">Histórico de sessões</button><button class="ghostBtn" onclick="document.getElementById('realtimeCard').scrollIntoView({behavior:'smooth'})">Estatísticas em tempo real</button></div>
+        </section>
+        <section class="card" style="padding:16px;margin-top:12px">
+          <div class="cardHeader"><h2>Ações da sessão</h2><span>dados locais</span></div>
+          <div class="settingsActions"><button id="export" class="connectBtn">⇩ Exportar CSV</button><button id="clear" class="ghostBtn">Limpar sessão</button></div>
+        </section>
+      </div>
+
+      <div id="utilityMoreView" class="utilityView">
+        <section id="diagSection" class="card diag">
+          <div class="cardHeader"><h2>Informações do equipamento</h2><span>DT24PW / BLE</span></div>
+          <div class="diagGrid">
+            <div class="row"><span>Dispositivo</span><strong id="deviceName2">DT24PW_BLE</strong></div>
+            <div class="row"><span>Pacote</span><strong>01 / 02 / DC</strong></div>
+            <div class="row"><span>Energia DT24PW</span><strong><span id="energyDiag">—</span> kWh</strong></div>
+            <div class="row"><span>Capacidade DT24PW</span><strong><span id="deviceCap">—</span> Ah</strong></div>
+            <div class="row"><span>Backlight</span><strong id="backlight">—</strong></div>
+            <div class="row"><span>Campo 20–23</span><strong id="unknownA">—</strong></div>
+            <div class="row"><span>Campo 31–34</span><strong id="unknownB">—</strong></div>
+            <div class="row"><span>Checksum</span><strong id="checksum">—</strong></div>
+          </div>
+          <div id="raw" class="raw">Nenhum pacote recebido.</div>
+        </section>
+
+        <section class="card" id="socDiagCard" style="margin-top:12px;display:block">
+          <div class="cardHeader"><h2>🔎 Diagnóstico do SOC</h2><span>somente para validação</span></div>
+          <div id="socDiag" style="font:13px/1.55 monospace;color:#b8c8d9">Aguardando dados…</div>
+        </section>
+
+        <section class="card" id="dirDiagCard" style="margin-top:12px;display:block">
+          <div class="cardHeader"><h2>🧪 Investigação do sinal + / −</h2><span>não altera o cálculo</span></div>
+          <div style="font-size:12px;line-height:1.5;color:#9eb1c7">O DT24PW mostra <b>+</b> na carga e <b>−</b> na descarga. Esta ferramenta registra o pacote BLE bruto para investigação do protocolo.</div>
+          <div class="settingsActions" style="grid-template-columns:1fr 1fr;margin-top:9px">
+            <button id="markCharge" class="connectBtn">＋ Marcar CARGA</button>
+            <button id="markDischarge" class="ghostBtn">− Marcar DESCARGA</button>
+          </div>
+          <div id="dirDiag" style="font:11px/1.55 ui-monospace,monospace;color:#b8c8d9;margin-top:10px">Aguardando dois estados marcados…</div>
+        </section>
+
+        <section class="card" style="margin-top:12px;padding:16px">
+          <div class="cardHeader"><h2>Ajuda</h2><span>ATORCH Monitor</span></div>
+          <div class="note">O SOC é estimado por coulomb counting. O fluxo é determinado automaticamente pelo comportamento temporal das medições, com proteção contra transientes ao ligar o inversor.</div>
+        </section>
+      </div>
+
+      <button class="ghostBtn utilityClose" onclick="openUtility('home')">Voltar ao monitoramento</button>
     </section>
-    <div class="footer">ATORCH DT24PW Monitor V5.24.10 &nbsp;|&nbsp; Monitoramento em tempo real</div>
+
+    <div class="footer">ATORCH DT24PW Monitor V5.24.21 &nbsp;|&nbsp; Monitoramento em tempo real</div>
   </main>
 </div>
 
@@ -608,6 +703,43 @@ const CURRENT_SESSION_KEY='atorch_current_session_v519';
 let sessionHistory=JSON.parse(localStorage.getItem(SESSION_KEY)||'[]');
 let currentSession=null;
 
+
+function organizeV5_24_15(){
+  const dest=$('utilityHistoryView');
+  if(!dest)return;
+  ['history','sessionHistory','realtimeCard','batteryData'].forEach(id=>{
+    const el=$(id);
+    if(el && el.parentElement!==dest) dest.appendChild(el);
+  });
+}
+organizeV5_24_15();
+function setNavActive(which){
+  ['navHome','navHistory','navSettings','navMore'].forEach(id=>{const el=$(id);if(el)el.classList.toggle('active',id===which);});
+}
+function showUtilityView(view){
+  const map={settings:'utilitySettingsView',history:'utilityHistoryView',more:'utilityMoreView',home:'utilityHomeView'};
+  Object.entries(map).forEach(([k,id])=>{const el=$(id);if(el)el.classList.toggle('active',k===view);});
+  if($('utilitySettingsTab'))$('utilitySettingsTab').classList.toggle('active',view==='settings');
+  if($('utilityMoreTab'))$('utilityMoreTab').classList.toggle('active',view==='more');
+}
+function openUtility(view){
+  const panel=$('utilityPanel');
+  if(view==='history'){
+    setNavActive('navHistory');
+    showUtilityView('history');
+    if(panel){panel.classList.add('open');panel.scrollIntoView({behavior:'smooth',block:'start'});}
+    return;
+  }
+  if(view==='home'){
+    setNavActive('navHome');
+    if(panel)panel.classList.remove('open');
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  setNavActive(view==='history'?'navHistory':view==='settings'?'navSettings':'navMore');
+  showUtilityView(view);
+  if(panel){panel.classList.add('open');panel.scrollIntoView({behavior:'smooth',block:'start'});}
+}
 function saveSessionHistory(){
   try{localStorage.setItem(SESSION_KEY,JSON.stringify(sessionHistory));}catch(e){btLog('AVISO | não foi possível salvar histórico de sessões: '+(e?.message||e));}
 }
@@ -627,13 +759,20 @@ function sessionStart(p,now){
   currentSession={id:String(now),start:now,last:now,initialSoc:state.soc,finalSoc:state.soc,initialEnergy:p.energy,finalEnergy:p.energy,initialChargeAh:state.chargeAh,initialDischargeAh:state.dischargeAh,chargeAh:0,dischargeAh:0,minVoltage:p.voltage,maxVoltage:p.voltage,maxCurrent:p.current,maxPower:p.voltage*p.current,samples:0};
   saveCurrentSession();renderSessionHistory();
 }
+let lastSessionUiMs=0;
 function sessionUpdate(p,now,power){
   sessionStart(p,now);
   const s=currentSession;s.last=now;s.finalSoc=state.soc;s.finalEnergy=p.energy;s.samples++;
   s.minVoltage=Math.min(s.minVoltage,p.voltage);s.maxVoltage=Math.max(s.maxVoltage,p.voltage);
   s.maxCurrent=Math.max(s.maxCurrent,p.current);s.maxPower=Math.max(s.maxPower,power);
   s.chargeAh=Math.max(0,state.chargeAh-s.initialChargeAh);s.dischargeAh=Math.max(0,state.dischargeAh-s.initialDischargeAh);
-  saveCurrentSession();renderSessionHistory();
+  // Persist the evolving session periodically instead of rewriting localStorage
+  // and the entire session panel on every BLE packet (~1 Hz).
+  if(now-lastSessionUiMs>=2000){
+    lastSessionUiMs=now;
+    saveCurrentSession();
+    renderSessionHistory();
+  }
 }
 function finalizeSession(reason='desconectado'){
   if(!currentSession)return;
@@ -712,7 +851,7 @@ function parsePacket(a){
   const hours=u16(a,26),minutes=a[28],seconds=a[29],runtime=hours*3600+minutes*60+seconds;
   const backlight=a[30];
   return {voltage,current,capacity,energy,price,temperature,runtime,backlight,
-    unknownA:hex(a.slice(20,24)),unknownB:hex(a.slice(31,35)),checksum:a[35],raw:hex(a)};
+    unknownA:hex(a.slice(20,24)),unknownB:hex(a.slice(31,35)),checksum:a[35],raw:hex(a),bytes:Array.from(a.slice(0,36))};
 }
 
 /* Inferência V5:
@@ -724,68 +863,122 @@ function parsePacket(a){
 */
 function inferFlow(voltage,current,now){
   history.push({t:now,v:voltage,i:current});
-  if(history.length>30) history.shift();
+  if(history.length>40) history.shift();
   if(current<0.12){
     autoFlow='idle';candidateFlow='idle';candidateCount=0;confidence='alta';evidenceAge=0;
     return 'idle';
   }
 
-  // V5.23 — correção cirúrgica da direção quando o app inicia
-  // com corrente já presente. O DT24PW transmite a corrente como magnitude;
-  // portanto, a direção continua sendo inferida pelo comportamento da tensão.
-  // Na faixa intermediária não assumimos "carga" apenas pela tensão inicial:
-  // aguardamos evidência temporal para evitar mostrar carga durante descarga.
+  /* V5.24.21 — inferência de fluxo revisada.
+     O DT24PW envia a corrente como magnitude. Portanto a direção é inferida
+     pelo comportamento temporal da tensão.
+
+     Objetivos desta versão:
+     1) não transformar uma queda instantânea causada pela ligação do inversor
+        em DESCARGA quando a carga líquida continua positiva;
+     2) permitir CARGA -> DESCARGA quando a geração solar cair abaixo do consumo;
+     3) permitir DESCARGA -> CARGA quando a geração voltar a superar o consumo;
+     4) exigir confirmação temporal para mudanças reais, sem travar o estado.
+  */
   if(!seededInitialFlow && history.length>=2){
-    const avgV=history.slice(-2).reduce((s,p)=>s+p.v,0)/2;
-    if(avgV>=13.40){
-      autoFlow='charge'; confidence='média';
-      seededInitialFlow=true;
-    }else if(avgV<=13.05){
-      autoFlow='discharge'; confidence='baixa';
-      seededInitialFlow=true;
-    }
+    const avgV=(history[history.length-1].v+history[history.length-2].v)/2;
+    if(avgV>=13.40){ autoFlow='charge'; confidence='média'; seededInitialFlow=true; }
+    else if(avgV<=13.05){ autoFlow='discharge'; confidence='baixa'; seededInitialFlow=true; }
     evidenceAge=0;
   }
 
   if(history.length<5) return autoFlow;
+
   const n=history.length;
-  const recent=history.slice(-5);
-  const old=history[Math.max(0,n-10)] || history[0];
-  const dv=voltage-old.v;
-  const di=current-old.i;
-  const slope=(recent[recent.length-1].v-recent[0].v)/(recent.length-1);
+  const last=history[n-1];
+  const p5=history[Math.max(0,n-5)];
+  const p10=history[Math.max(0,n-10)];
+  const p20=history[Math.max(0,n-20)];
+  const slope5=(last.v-p5.v)/Math.max(1,n-1-Math.max(0,n-5));
+  const slope10=(last.v-p10.v)/Math.max(1,n-1-Math.max(0,n-10));
+  const slope20=(last.v-p20.v)/Math.max(1,n-1-Math.max(0,n-20));
+  const dv10=last.v-p10.v;
+  const dv20=last.v-p20.v;
+  const di10=last.i-p10.i;
+
+  let chargeScore=0;
+  let dischargeScore=0;
+
+  // Tendência sustentada de tensão: evidência principal.
+  if(slope5>=0.0025) chargeScore+=2;
+  if(slope5<=-0.0025) dischargeScore+=2;
+  if(slope10>=0.0015) chargeScore+=2;
+  if(slope10<=-0.0015) dischargeScore+=2;
+  if(slope20>=0.0010) chargeScore+=1;
+  if(slope20<=-0.0010) dischargeScore+=1;
+
+  // Mudança de corrente + resposta de tensão, mantendo o critério histórico.
+  if(Math.abs(di10)>=0.45){
+    if(dv10>0.025) chargeScore+=2;
+    if(dv10<-0.025) dischargeScore+=2;
+  }
+
+  // Ao ligar/desligar uma carga, uma queda/subida isolada de tensão não deve
+  // inverter imediatamente o fluxo. Recuperação posterior conta a favor de carga.
+  const prev=history[n-2];
+  const dv1=last.v-prev.v;
+  if(Math.abs(dv1)>=0.04){
+    if(dv1<0 && slope10>=-0.001) chargeScore+=1;
+    if(dv1>0 && slope10<=0.001) dischargeScore+=1;
+  }
+
+  // Regras de confirmação por faixa de tensão, sem tornar a tensão sozinha
+  // responsável pela decisão. 13,40 V é uma evidência favorável à carga,
+  // enquanto 13,05 V é uma evidência favorável à descarga.
+  if(last.v>=13.40) chargeScore+=1;
+  if(last.v<=13.05) dischargeScore+=1;
+
   let candidate=null;
+  const margin=2;
+  if(chargeScore>=4 && chargeScore>=dischargeScore+margin) candidate='charge';
+  else if(dischargeScore>=4 && dischargeScore>=chargeScore+margin) candidate='discharge';
 
-  // Evidência forte: mudança de corrente acompanhada pela direção da tensão.
-  if(Math.abs(di)>=0.45){
-    if(dv>0.025) candidate='charge';
-    else if(dv<-0.025) candidate='discharge';
+  // Se já estamos em CARGA, uma única queda transitória não vence a tendência
+  // de recuperação. Mas uma descarga solar real, sustentada, pode vencer.
+  if(autoFlow==='charge' && candidate==='discharge'){
+    const sustainedDischarge=(slope10<=-0.0025 && slope20<=-0.0015) ||
+                              (dv20<=-0.12 && slope10<=-0.0020);
+    if(!sustainedDischarge) candidate=null;
   }
 
-  // Evidência temporal: durante uma descarga estável a corrente pode quase não
-  // variar. Nesse caso, a queda sustentada da tensão deve poder corrigir um
-  // "charge" inicial. O mesmo vale, de forma simétrica, para carga.
-  if(!candidate && current>=0.50 && Math.abs(dv)>=0.010){
-    if(dv<0 && slope<=-0.0025) candidate='discharge';
-    else if(dv>0 && slope>=0.0025) candidate='charge';
+  // DESCARGA -> CARGA: além da tendência, existe uma condição de recuperação
+  // específica para o cenário em que o inversor é desligado. Nesse caso o
+  // carregador/solar pode manter a bateria em tensão alta e estável, sem que
+  // exista uma subida contínua de tensão suficiente para as regras de slope.
+  // O DT24PW não informa o sinal da corrente no BLE, portanto 13,55 V+ sustentados
+  // por alguns segundos são uma evidência forte de retorno à carga neste contexto.
+  if(autoFlow==='discharge' && last.v>=13.55){
+    chargeScore+=3;
+    if(candidate!=='discharge' || chargeScore>=dischargeScore+margin) candidate='charge';
   }
 
-  // Mantém o critério original da V5.23 como terceira linha de evidência.
-  if(!candidate && Math.abs(slope)>=0.004 && Math.abs(di)>=0.25){
-    candidate=slope>0?'charge':'discharge';
+  if(autoFlow==='discharge' && candidate==='charge'){
+    const sustainedCharge=(slope10>=0.0025 && slope20>=0.0015) ||
+                           (dv20>=0.12 && slope10>=0.0020) ||
+                           (last.v>=13.55);
+    if(!sustainedCharge) candidate=null;
   }
 
   if(candidate){
     if(candidate===candidateFlow) candidateCount++;
-    else {candidateFlow=candidate;candidateCount=1}
+    else { candidateFlow=candidate; candidateCount=1; }
+    // 3 confirmações (~3 s em pacotes de 1 Hz) para reversão real.
+    // Saída de repouso permanece rápida.
     const needed=autoFlow==='idle'?2:3;
     if(candidateCount>=needed){
       autoFlow=candidate;
-      confidence=(Math.abs(dv)>=0.05||Math.abs(slope)>=0.01)?'alta':'média';
+      confidence=(Math.max(chargeScore,dischargeScore)>=6)?'alta':'média';
       evidenceAge=0;
     }
   }else{
-    candidateFlow='idle';candidateCount=0;evidenceAge++;
+    candidateFlow='idle';
+    candidateCount=0;
+    evidenceAge++;
     if(evidenceAge>20 && autoFlow!=='idle') confidence='média';
   }
   return autoFlow;
@@ -795,6 +988,11 @@ function activeFlow(p,now){
   if(state.mode==='discharge') return {flow:'discharge',conf:'manual'};
   return {flow:inferFlow(p.voltage,p.current,now),conf:confidence};
 }
+function formatFlowCurrent(current,flow,digits=1){
+  if(!Number.isFinite(current) || current<0.12) return digits===3?'0.000 A':'0.0 A';
+  const sign=flow==='charge'?'+':flow==='discharge'?'−':'';
+  return sign+current.toFixed(digits)+' A';
+}
 function renderFlow(flow,current,conf){
   const ring=$('flowRing'); if(ring) ring.className='flowRing '+flow;
   btSet('flowIcon',flow==='charge'?'↑':flow==='discharge'?'↓':'↔');
@@ -802,10 +1000,14 @@ function renderFlow(flow,current,conf){
   btSet('flowA',current<0.12?'aguardando corrente':(state.mode==='auto'?'detecção automática • confiança '+conf:'modo manual'));
   btSet('flowPill',flow==='charge'?'Carregando':flow==='discharge'?'Descarregando':'Repouso');
   const stateLabel=flow==='charge'?'CARREGANDO':flow==='discharge'?'DESCARREGANDO':'EM REPOUSO';
+  const flowIcon=flow==='charge'?'↑':flow==='discharge'?'↓':'↔';
+  const flowHint=flow==='charge'?'Bateria recebendo energia':flow==='discharge'?'Bateria fornecendo energia':'Bateria em repouso';
   btSet('skin1State',stateLabel);btSet('skin2State',stateLabel);
-  btSet('batteryPanelCurrent',current<0.12?'0.0 A':current.toFixed(1)+' A');
-  btSet('skin1Current',current<0.12?'0.0 A':current.toFixed(1)+' A');
-  btSet('skin2Current',current<0.12?'0.0 A':current.toFixed(1)+' A');
+  btSet('skin1FlowIcon',flowIcon);btSet('skin2FlowIcon',flowIcon);
+  btSet('skin1FlowHint',flowHint);btSet('skin2FlowHint',flowHint);
+  btSet('batteryPanelCurrent',formatFlowCurrent(current,flow,1));
+  btSet('skin1Current',formatFlowCurrent(current,flow,1));
+  btSet('skin2Current',formatFlowCurrent(current,flow,1));
   const pv=$('batteryPanelPower'),vv=$('batteryPanelVoltage');
   const displayPower=(lastVoltage!==null&&Number.isFinite(current)?(lastVoltage*current).toFixed(0):'0')+' W';
   const displayVoltage=lastVoltage!==null?lastVoltage.toFixed(1)+' V':'--.- V';
@@ -1024,7 +1226,44 @@ function updateSocDiagnostic(resultFlow){
     'Diferença: <b>'+diff.toFixed(2)+' pontos</b><br>'+
     'Fluxo: <b>'+resultFlow+'</b>';
 }
+function updateDirectionProbe(){
+  const el=$('dirDiag'); if(!el)return;
+  if(!directionProbeCharge && !directionProbeDischarge){
+    el.innerHTML='Aguardando dois estados marcados…';
+    return;
+  }
+  const lines=[];
+  const fmt=(label,p)=>{
+    if(!p)return label+': —';
+    return label+': I='+p.current.toFixed(3)+' A | V='+p.voltage.toFixed(2)+' V | Campo20–23='+p.unknownA+' | Campo31–34='+p.unknownB+' | Check='+('0x'+p.checksum.toString(16).padStart(2,'0').toUpperCase())+'<br>RAW: '+p.raw;
+  };
+  lines.push(fmt('＋ CARGA',directionProbeCharge));
+  lines.push(fmt('− DESCARGA',directionProbeDischarge));
+  if(directionProbeCharge && directionProbeDischarge){
+    const a=directionProbeCharge.bytes, b=directionProbeDischarge.bytes;
+    const diffs=[];
+    for(let i=0;i<Math.min(a.length,b.length);i++){
+      if(a[i]!==b[i]) diffs.push('['+String(i).padStart(2,'0')+'] '+a[i].toString(16).padStart(2,'0').toUpperCase()+' → '+b[i].toString(16).padStart(2,'0').toUpperCase());
+    }
+    lines.push('<br><b>Bytes diferentes entre CARGA e DESCARGA ('+diffs.length+')</b>');
+    lines.push(diffs.length?diffs.join(' · '):'Nenhum byte diferente.');
+    lines.push('<br><span style="color:#8196ad">Se um mesmo byte/bit mudar exclusivamente com o sinal +/−, teremos um candidato forte à direção. O campo de corrente continua sendo magnitude.</span>');
+  }
+  el.innerHTML=lines.join('<br>');
+}
+function markDirectionProbe(kind){
+  if(!directionProbeLastPacket){
+    alert('Aguardando um pacote BLE válido. Conecte o DT24PW e tente novamente.');
+    return;
+  }
+  const p=directionProbeLastPacket;
+  const copy={...p,bytes:Array.from(p.bytes),markedAt:new Date().toLocaleTimeString('pt-BR')};
+  if(kind==='charge') directionProbeCharge=copy;
+  else directionProbeDischarge=copy;
+  updateDirectionProbe();
+}
 function updateUI(p){
+  directionProbeLastPacket={...p,bytes:Array.from(p.bytes||[])};
   const now=Date.now(), power=p.voltage*p.current;
   const result=activeFlow(p,now);
   if(!socAnchorInitialized && result.flow!=='idle'){
@@ -1034,10 +1273,10 @@ function updateUI(p){
   }
   integrate(p.current,result.flow,now,p.voltage);
   btSet('voltage',p.voltage.toFixed(1));
-  btSet('current',p.current.toFixed(3));
+  btSet('current',formatFlowCurrent(p.current,result.flow,3));
   btSet('power',power.toFixed(1));
-  btSet('batteryPanelCurrent',p.current.toFixed(1)+' A');btSet('batteryPanelPower',power.toFixed(0)+' W');btSet('batteryPanelVoltage',p.voltage.toFixed(1)+' V');
-  btSet('skin1Current',p.current.toFixed(1)+' A');btSet('skin2Current',p.current.toFixed(1)+' A');
+  btSet('batteryPanelCurrent',formatFlowCurrent(p.current,result.flow,1));btSet('batteryPanelPower',power.toFixed(0)+' W');btSet('batteryPanelVoltage',p.voltage.toFixed(1)+' V');
+  btSet('skin1Current',formatFlowCurrent(p.current,result.flow,1));btSet('skin2Current',formatFlowCurrent(p.current,result.flow,1));
   btSet('skin1Power',power.toFixed(0)+' W');btSet('skin2Power',power.toFixed(0)+' W');
   btSet('skin1Voltage',p.voltage.toFixed(1)+' V');btSet('skin2Voltage',p.voltage.toFixed(1)+' V');
   btSet('energy',p.energy.toFixed(2));
@@ -1068,6 +1307,12 @@ let btLogLines=[],btPacketCount=0,btValidPacketCount=0;
 let bleNotifyEvents=0, bleReadAttempts=0, bleReadSuccess=0, bleProbeRunning=false;
 let bleLastNotifyMs=null, bleLastReadMs=null, bleNoDataTimer=null, bleProbeTimer=null;
 let bleServer=null, bleService=null;
+// V5.24.21 — investigação do sinal de direção do DT24PW.
+// Não participa do inferFlow/SOC; apenas guarda dois pacotes marcados pelo usuário.
+let directionProbeLastPacket=null;
+let directionProbeCharge=null;
+let directionProbeDischarge=null;
+
 // V5.23 — buffer de recepção para notificações BLE fragmentadas/concatenadas.
 // O DT24PW usa frames de 36 bytes iniciados por FF 55 01.
 let bleRxBuffer=[];
@@ -1190,8 +1435,7 @@ async function readFfe1(reason='manual'){
       btValidPacketCount++;
       btSet('validPacketCount',btValidPacketCount);
       btLog('READ PACOTE VÁLIDO | V='+p.voltage.toFixed(2)+'V | I='+p.current.toFixed(3)+'A | E='+p.energy.toFixed(2)+'kWh | T='+p.temperature+'C');
-      updateUI(p);
-      btLog('READ UI ATUALIZADA | SOC='+state.soc.toFixed(2)+'%');
+      safeUpdateUI(p,'READ');
     }else btLog('READ OK MAS FORMATO NÃO RECONHECIDO');
     updateBleSummary(); return true;
   }catch(e){
@@ -1251,6 +1495,26 @@ function btDiagInit(){
   btSet('secureContext',window.isSecureContext?'SIM':'NÃO');
   btSet('gattState','desconectado');btSet('notifyState','não iniciado');
 }
+function safeUpdateUI(p,source='NOTIFY'){
+  try{
+    updateUI(p);
+    btLog(source+' | UI ATUALIZADA | SOC='+state.soc.toFixed(2)+'% | fluxo='+autoFlow);
+    return true;
+  }catch(err){
+    btLog(source+' | ERRO NA UI | name='+(err?.name||'Error')+' | message='+(err?.message||String(err)));
+    console.error('ATORCH updateUI error',err);
+    return false;
+  }
+}
+
+window.addEventListener('error',e=>{
+  btLog('JS ERROR GLOBAL | '+(e?.message||'erro desconhecido')+' | linha='+(e?.lineno||'?'));
+});
+window.addEventListener('unhandledrejection',e=>{
+  const r=e?.reason;
+  btLog('PROMISE ERROR GLOBAL | '+(r?.message||String(r)));
+});
+
 function onData(e){
   btPacketCount++; bleNotifyEvents++; bleLastNotifyMs=Date.now(); btSet('packetCount',btPacketCount); updateBleSummary();
   try{
@@ -1268,8 +1532,7 @@ function onData(e){
       if(p){
         btValidPacketCount++;btSet('validPacketCount',btValidPacketCount);
         btLog('PACOTE VÁLIDO | V=' + p.voltage.toFixed(2) + 'V | I=' + p.current.toFixed(3) + 'A | E=' + p.energy.toFixed(2) + 'kWh | T=' + p.temperature + 'C');
-        updateUI(p);
-        btLog('UI ATUALIZADA | SOC=' + state.soc.toFixed(2) + '%');
+        safeUpdateUI(p,'NOTIFY');
       }else{
         btLog('FRAME IGNORADO | formato não reconhecido após sincronização');
       }
@@ -1296,7 +1559,7 @@ btDiagInit();
     return;
   }
   try{
-    history=[];autoFlow='idle';candidateFlow='idle';candidateCount=0;seededInitialFlow=false;confidence='—';stableIdleSince=null;lastVoltage=null;socAnchorInitialized=false;sessionCurrentInitialSoc=null;resetBleRxBuffer();
+    history=[];autoFlow='idle';candidateFlow='idle';candidateCount=0;seededInitialFlow=false;confidence='—';stableIdleSince=null;lastVoltage=null;socAnchorInitialized=false;sessionCurrentInitialSoc=null;lastSessionUiMs=0;resetBleRxBuffer();
     btPacketCount=0;btValidPacketCount=0;bleNotifyEvents=0;bleReadAttempts=0;bleReadSuccess=0;bleLastNotifyMs=null;bleLastReadMs=null;btSet('packetCount','0');btSet('validPacketCount','0');updateBleSummary();
     btLog('SOLICITANDO dispositivo BLE...');
     device=await navigator.bluetooth.requestDevice({
@@ -1508,6 +1771,7 @@ function formatChartValue(v,unit){
   return v.toFixed(digits)+' '+unit;
 }
 $('connect').onclick=connect;$('disconnect').onclick=disconnect;$('export').onclick=exportCSV;$('clear').onclick=clearSession;
+$('markCharge').onclick=()=>markDirectionProbe('charge');$('markDischarge').onclick=()=>markDirectionProbe('discharge');
 $('clearSocHistory').onclick=()=>{if(confirm('Apagar todo o histórico do SOC?')){socHistory=[];localStorage.removeItem('atorch_soc_history_v55');scheduleRender();}};
 $('clearSessionHistory').onclick=()=>{if(confirm('Apagar todo o histórico de sessões?')){sessionHistory=[];saveSessionHistory();renderSessionHistory();}};
 $('saveSettings').onclick=saveSettings;$('calFull').onclick=calibrateFull;$('calZero').onclick=calibrateZero;
@@ -1553,7 +1817,7 @@ $('copyBtLog').onclick=async()=>{
   selectBtn.click();
   btLog('COPIAR LOG | fallback manual exibido');
 };
-btLog('APP INICIADO | V5.24.10 | SERVICE='+SERVICE+' | CHAR='+CHAR);btLog('DIAGNÓSTICO | BLE profundo: discovery + READ + notifications + heartbeat');btLog('V5.24.10 | buffer BLE + Screen Wake Lock + renderização via requestAnimationFrame');updateBleSummary();
+btLog('APP INICIADO | V5.24.21 | SERVICE='+SERVICE+' | CHAR='+CHAR);btLog('V5.24.21 | visual V5.24.17 preservado; proteção de erros + sessão throttled');btLog('DIAGNÓSTICO | BLE profundo: discovery + READ + notifications + heartbeat');btLog('V5.24.21 | buffer BLE + Screen Wake Lock + renderização via requestAnimationFrame');updateBleSummary();
 
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible' && connected) requestWakeLock('retorno ao primeiro plano');
