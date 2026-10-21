@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061221">
+<link rel="manifest" href="./manifest.json">
+<title>ATORCH Smart Battery Monitor V6</title>
+<style>
+:root{
+  --bg:#061221;--panel:#0a192c;--panel2:#0e233d;--line:#1b3654;
+  --text:#f4f8fc;--muted:#8ba2be;--green:#32e88a;--amber:#ffbe3b;
+  --red:#ff5264;--cyan:#32d2f8;--blue:#2688eb;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;background:radial-gradient(circle at 50% -10%,#113155 0,#061221 60%);
+  color:var(--text);font-family:Inter,system-ui,-apple-system,sans-serif;
+  min-height:100vh;padding-bottom:30px;
+}
+.appHeader{
+  position:sticky;top:0;z-index:30;height:66px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:0 16px;background:rgba(6,18,33,.94);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px}
+.brandIcon{width:38px;height:38px;border-radius:10px;background:#102c4b;border:1px solid #234c75;display:grid;place-items:center;color:var(--cyan);font-size:20px}
+.brand h1{margin:0;font-size:17px;font-weight:900;letter-spacing:.3px}
+.brand small{display:block;font-size:10px;color:var(--muted);margin-top:1px}
+.btStatusBox{
+  display:flex;align-items:center;gap:8px;padding:6px 10px;
+  border-radius:20px;background:#0d2238;border:1px solid var(--line);font-size:11px;
+}
+.dot{width:9px;height:9px;border-radius:50%;background:#62758c}
+.dot.on{background:var(--green);box-shadow:0 0 10px var(--green)}
+.dot.reconnecting{background:var(--amber);box-shadow:0 0 10px var(--amber);animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:.4}to{opacity:1}}
+.dash{max-width:980px;margin:auto;padding:12px 14px}
+.topBanner{
+  background:linear-gradient(135deg,#133b63,#0f2a47);border:1px solid #24507b;
+  border-radius:12px;padding:8px 12px;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.topBanner p{margin:0;font-size:11px;color:#c0d5ec}
+.btnInstall{border:0;background:var(--green);color:#032011;font-weight:800;border-radius:8px;padding:6px 12px;font-size:11px;cursor:pointer}
+.actionsRow{display:grid;grid-template-columns:1.2fr 1fr;gap:9px;margin-bottom:12px}
+.btn{border:0;border-radius:12px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;color:#fff}
+.btnConnect{background:linear-gradient(135deg,#1978d2,#17a2b8);box-shadow:0 4px 15px rgba(23,162,184,.25)}
+.btnDisconnect{background:#13263b;border:1px solid var(--line);color:var(--muted)}
+.card{background:linear-gradient(180deg,#0a1b2d,#071424);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.25);margin-bottom:12px}
+.heroGrid{display:grid;grid-template-columns:minmax(240px,.9fr) 1.1fr;gap:16px;align-items:center}
+.gaugeWrap{position:relative;width:240px;height:240px;margin:auto;display:grid;place-items:center}
+.gaugeCircle{
+  position:absolute;inset:10px;border-radius:50%;
+  background:conic-gradient(from 225deg,var(--gaugeColor,#32e88a) 0deg,var(--gaugeColor,#32e88a) var(--gauge,270deg),#162a42 var(--gauge,270deg),#162a42 270deg,transparent 270deg);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 13px),#000 calc(100% - 12px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 13px),#000 calc(100% - 12px));
+}
+.gaugeCenter{
+  position:absolute;inset:48px;border-radius:50%;
+  background:radial-gradient(circle at 40% 30%,#152941,#091626 70%);
+  border:1px solid #244163;display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.gaugePct{font-size:52px;font-weight:950;line-height:1;letter-spacing:-2px}
+.gaugePct small{font-size:22px;color:var(--muted);margin-left:2px}
+.gaugeFlow{margin-top:6px;font-size:12px;font-weight:800;color:var(--green);text-transform:uppercase}
+.gaugeSub{font-size:10px;color:var(--muted);margin-top:3px}
+.metricsList{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mBox{background:#09192b;border:1px solid #163250;border-radius:12px;padding:10px;display:flex;flex-direction:column}
+.mBox.full{grid-column:1/-1}
+.mLabel{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.mVal{font-size:22px;font-weight:900;margin-top:3px;font-variant-numeric:tabular-nums}
+.mSub{font-size:9px;color:#7187a2;margin-top:2px}
+.mVal.volt{color:var(--green)}.mVal.curr{color:var(--cyan)}.mVal.pow{color:var(--amber)}.mVal.soc{color:#fff}
+.flowBanner{
+  grid-column:1/-1;border-radius:10px;background:#0d233a;border:1px solid #1c3d61;
+  padding:7px 12px;display:flex;justify-content:space-between;align-items:center;font-size:11px;
+}
+.autonomyRow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.autoCard{background:#0a1a2b;border:1px solid var(--line);border-radius:12px;padding:12px}
+.autoLabel{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.autoVal{font-size:22px;font-weight:900;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.chartWrap{height:200px;width:100%;margin-top:10px}
+.chartWrap canvas{width:100%;height:100%;display:block}
+.settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.field input,.field select{width:100%;background:#061322;border:1px solid var(--line);color:#fff;border-radius:10px;padding:9px;font-size:13px}
+.quickBtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+.btnSm{background:#10253d;border:1px solid var(--line);color:#d0ddec;border-radius:9px;padding:9px;font-size:11px;font-weight:800;cursor:pointer}
+.btnSm.primary{background:#1875c4;border-color:#1875c4;color:#fff}
+@media(max-width:620px){
+  .heroGrid{grid-template-columns:1fr}
+  .gaugeWrap{width:210px;height:210px}
+  .gaugeCenter{inset:40px}
+  .gaugePct{font-size:44px}
+  .settingsGrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="appHeader">
+  <div class="brand">
+    <div class="brandIcon">⚡</div>
+    <div><h1>ATORCH Pro</h1><small>DT24PW Smart Battery Telemetry</small></div>
+  </div>
+  <div class="btStatusBox">
+    <span id="dot" class="dot"></span>
+    <b id="statusText">Desconectado</b>
+  </div>
+</header>
+
+<main class="dash">
+  <div id="installBanner" class="topBanner" style="display:none">
+    <p>Instale no seu Android para abrir como aplicativo nativo e manter a leitura sempre ativa.</p>
+    <button id="btnInstallApp" class="btnInstall">Instalar App</button>
+  </div>
+
+  <section class="actionsRow">
+    <button id="btnConnect" class="btn btnConnect">⚡ Conectar DT24PW</button>
+    <button id="btnDisconnect" class="btn btnDisconnect">Desconectar</button>
+  </section>
+
+  <section class="card">
+    <div class="heroGrid">
+      <div class="gaugeWrap">
+        <div id="gaugeCircle" class="gaugeCircle" style="--gauge:270deg;--gaugeColor:var(--green)"></div>
+        <div class="gaugeCenter">
+          <div class="gaugePct"><span id="socDisplay">100</span><small>%</small></div>
+          <div id="flowLabel" class="gaugeFlow">EM REPOUSO</div>
+          <div id="vocvLabel" class="gaugeSub">Vocv: --.- V</div>
+        </div>
+      </div>
+      <div class="metricsList">
+        <div class="flowBanner">
+          <span id="statusDetail">Aguardando dados...</span>
+          <b id="coulombAh">0.0 Ah acumulados</b>
+        </div>
+        <div class="mBox">
+          <span class="mLabel">Tensão</span>
+          <span id="voltVal" class="mVal volt">--.- V</span>
+          <span id="voltSub" class="mSub">Compensada: --.- V</span>
+        </div>
+        <div class="mBox">
+          <span class="mLabel">Corrente</span>
+          <span id="currVal" class="mVal curr">0.00 A</span>
+          <span id="currSub" class="mSub">Direção automática</span>
+        </div>
+        <div class="mBox">
+          <span class="mLabel">Potência</span>
+          <span id="powVal" class="mVal pow">0 W</span>
+          <span id="powSub" class="mSub">Consumo/Geração</span>
+        </div>
+        <div class="mBox">
+          <span class="mLabel">Temperatura</span>
+          <span id="tempVal" class="mVal">-- °C</span>
+          <span class="mSub">Sensor DT24PW</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="autonomyRow">
+    <div class="autoCard">
+      <div class="autoLabel">↓ Autonomia Restante</div>
+      <div id="autonomyVal" class="autoVal">--:--</div>
+      <small id="autonomyHint" style="font-size:10px;color:var(--muted)">Até a tensão de corte</small>
+    </div>
+    <div class="autoCard">
+      <div class="autoLabel">↑ Tempo até 100% Carga</div>
+      <div id="chargeTimeVal" class="autoVal">--:--</div>
+      <small id="chargeTimeHint" style="font-size:10px;color:var(--muted)">Até absorção plena</small>
+    </div>
+  </section>
+
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+      <b>Curva de Carga / Descarga em Tempo Real</b>
+      <span id="sampleStats" style="color:var(--muted)">0 amostras</span>
+    </div>
+    <div class="chartWrap"><canvas id="liveChart"></canvas></div>
+  </section>
+
+  <section class="card">
+    <b style="display:block;margin-bottom:12px;font-size:14px">⚙ Parâmetros do Banco de Baterias</b>
+    <div class="settingsGrid">
+      <div class="field">
+        <label>Tipo de Bateria (Química)</label>
+        <select id="batteryType">
+          <option value="lifepo4_12">LiFePO4 12.8V (4S - Recomendado)</option>
+          <option value="lifepo4_24">LiFePO4 25.6V (8S)</option>
+          <option value="lead_12">Chumbo-Ácido / Gel / AGM 12V</option>
+          <option value="lead_24">Chumbo-Ácido / Gel / AGM 24V</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Capacidade Nominal (Ah)</label>
+        <input id="bankCapacity" type="number" step="1" value="200">
+      </div>
+      <div class="field">
+        <label>Resistência Interna Estimada + Cabos (mΩ)</label>
+        <input id="internalRes" type="number" step="1" value="12" title="Compensa a queda de tensão quando o inversor liga">
+      </div>
+      <div class="field">
+        <label>Tensão de Corte Mínima (V)</label>
+        <input id="cutoffVoltage" type="number" step="0.1" value="11.2">
+      </div>
+    </div>
+    <div class="quickBtns">
+      <button id="btnSaveConfig" class="btnSm primary">Salvar Parâmetros</button>
+      <button id="btnSync100" class="btnSm">Calibrar 100%</button>
+      <button id="btnSync0" class="btnSm">Calibrar 0%</button>
+    </div>
+  </section>
+</main>
+
+<script>
+const SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
+const CHAR_UUID    = '0000ffe1-0000-1000-8000-00805f9b34fb';
+
+const $ = id => document.getElementById(id);
+let device = null, characteristic = null;
+let isConnected = false, reconnectTimer = null, wakeLock = null;
+let samples = [], lastTimestamp = null, bleRxBuffer = [];
+
+// Configuração persistente do banco
+const config = {
+  type: localStorage.getItem('atorch_type') || 'lifepo4_12',
+  capacity: Number(localStorage.getItem('atorch_cap')) || 200,
+  rInternal: (Number(localStorage.getItem('atorch_ri')) || 12) / 1000, // ohms
+  cutoffV: Number(localStorage.getItem('atorch_cutoff')) || 11.2,
+  soc: Number(localStorage.getItem('atorch_soc')) ?? 100,
+  chargeAh: Number(localStorage.getItem('atorch_cah')) || 0,
+  dischargeAh: Number(localStorage.getItem('atorch_dah')) || 0
+};
+
+$('batteryType').value = config.type;
+$('bankCapacity').value = config.capacity;
+$('internalRes').value = (config.rInternal * 1000).toFixed(0);
+$('cutoffVoltage').value = config.cutoffV.toFixed(1);
+
+// Tabelas OCV (Tensão de Circuito Aberto x SOC)
+const OCV_CURVES = {
+  lifepo4_12: [
+    [10.0, 0], [12.0, 5], [12.8, 15], [13.0, 25], [13.15, 40],
+    [13.20, 70], [13.28, 85], [13.35, 95], [13.45, 99], [13.60, 100]
+  ],
+  lifepo4_24: [
+    [20.0, 0], [24.0, 5], [25.6, 15], [26.0, 25], [26.3, 40],
+    [26.4, 70], [26.56, 85], [26.7, 95], [26.9, 99], [27.2, 100]
+  ],
+  lead_12: [
+    [10.5, 0], [11.6, 10], [11.9, 25], [12.1, 45], [12.3, 60],
+    [12.5, 80], [12.7, 95], [12.85, 100]
+  ],
+  lead_24: [
+    [21.0, 0], [23.2, 10], [23.8, 25], [24.2, 45], [24.6, 60],
+    [25.0, 80], [25.4, 95], [25.7, 100]
+  ]
+};
+
+function getOcvSoc(voltage, type) {
+  const curve = OCV_CURVES[type] || OCV_CURVES.lifepo4_12;
+  if (voltage <= curve[0][0]) return 0;
+  if (voltage >= curve[curve.length - 1][0]) return 100;
+  for (let i = 1; i < curve.length; i++) {
+    if (voltage <= curve[i][0]) {
+      const [v0, s0] = curve[i - 1], [v1, s1] = curve[i];
+      return s0 + (voltage - v0) * (s1 - s0) / (v1 - v0);
+    }
+  }
+  return 100;
+}
+
+// Histórico de tendências para inferência de fluxo
+let voltageHistory = [];
+let detectedFlow = 'idle';
+let absorptionTimer = 0;
+
+function inferFlowDirection(voltage, current, compensatedV) {
+  if (current < 0.15) return 'idle';
+
+  voltageHistory.push({ v: voltage, cV: compensatedV, i: current, t: Date.now() });
+  if (voltageHistory.length > 20) voltageHistory.shift();
+
+  if (voltageHistory.length < 3) return detectedFlow;
+
+  const first = voltageHistory[0];
+  const last = voltageHistory[voltageHistory.length - 1];
+  const dv = last.cV - first.cV;
+  const dt = (last.t - first.t) / 1000;
+
+  // Se a tensão compensada (sem efeito IR) estiver subindo com corrente presente = Carga
+  if (dv > 0.015 && dt >= 2) {
+    detectedFlow = 'charge';
+  } else if (dv < -0.015 && dt >= 2) {
+    detectedFlow = 'discharge';
+  } else {
+    // Para platôs ultra-planos de LiFePO4: se a tensão pura estiver acima de 13.5V é carga; abaixo de 12.95V é descarga
+    const highV = config.type.includes('24') ? 27.0 : 13.50;
+    const lowV  = config.type.includes('24') ? 25.9 : 12.95;
+    if (voltage >= highV) detectedFlow = 'charge';
+    else if (voltage <= lowV) detectedFlow = 'discharge';
+  }
+  return detectedFlow;
+}
+
+// Checksum oficial ATORCH: (soma de bytes 2 a 34) ^ 0x44 == byte 35
+function isValidAtorchPacket(buf) {
+  if (buf.length < 36 || buf[0] !== 0xFF || buf[1] !== 0x55 || buf[2] !== 0x01) return false;
+  let sum = 0;
+  for (let i = 2; i < 35; i++) sum = (sum + buf[i]) & 0xFF;
+  return (sum ^ 0x44) === buf[35];
+}
+
+function parsePacket(buf) {
+  const u24 = i => ((buf[i] << 16) | (buf[i + 1] << 8) | buf[i + 2]) >>> 0;
+  const u32 = i => (buf[i] * 0x1000000 + buf[i + 1] * 0x10000 + buf[i + 2] * 0x100 + buf[i + 3]) >>> 0;
+  const u16 = i => ((buf[i] << 8) | buf[i + 1]) >>> 0;
+
+  const voltage = u24(4) / 10;
+  const current = u24(7) / 1000;
+  const capacity = u24(10) / 1000;
+  const energy = u32(13) / 100;
+  const temperature = u16(24);
+  return { voltage, current, capacity, energy, temperature };
+}
+
+// Algoritmo de Coulomb Counting com Filtro de Kalman / Drift Correction
+function updateBatteryTelemetry(pkt) {
+  const now = Date.now();
+  if (!lastTimestamp) { lastTimestamp = now; return; }
+  const dtHours = (now - lastTimestamp) / 3600000;
+  lastTimestamp = now;
+  if (dtHours <= 0 || dtHours > 0.05) return;
+
+  // 1. Compensação de Queda de Tensão por Resistência Interna (IR Drop)
+  const isCharging = detectedFlow === 'charge';
+  const vCompensated = isCharging 
+    ? pkt.voltage - (pkt.current * config.rInternal) 
+    : pkt.voltage + (pkt.current * config.rInternal);
+
+  // 2. Inferência de Fluxo
+  const flow = inferFlowDirection(pkt.voltage, pkt.current, vCompensated);
+
+  // 3. Integração de Ah (Coulomb Counting)
+  const coulombicEfficiency = config.type.startsWith('lifepo4') ? 0.99 : 0.88;
+
+  if (flow === 'charge' && pkt.current >= 0.15) {
+    const dAh = pkt.current * dtHours * coulombicEfficiency;
+    config.chargeAh += dAh;
+    config.soc = Math.min(100, config.soc + (dAh / config.capacity) * 100);
+
+    // Auto-Sincronização de 100% na absorção: Tensão alta + corrente caindo (< 0.025C)
+    const absV = config.type.includes('24') ? 28.4 : 14.2;
+    if (pkt.voltage >= absV && pkt.current <= (config.capacity * 0.025)) {
+      absorptionTimer += dtHours * 3600;
+      if (absorptionTimer >= 90) { // 90 segundos sustentados
+        config.soc = 100;
+      }
+    } else {
+      absorptionTimer = 0;
+    }
+  } else if (flow === 'discharge' && pkt.current >= 0.15) {
+    absorptionTimer = 0;
+    const dAh = pkt.current * dtHours;
+    config.dischargeAh += dAh;
+    config.soc = Math.max(0, config.soc - (dAh / config.capacity) * 100);
+
+    // Proteção de Tensão Mínima
+    if (pkt.voltage <= config.cutoffV) {
+      config.soc = Math.min(config.soc, 2.0);
+    }
+  } else {
+    // Em repouso: Ajuste lento por OCV para eliminar desvios acumulados
+    absorptionTimer = 0;
+    const targetSoc = getOcvSoc(pkt.voltage, config.type);
+    const diff = targetSoc - config.soc;
+    // Corrige suavemente no máximo 0.05% por segundo em repouso
+    config.soc = Math.max(0, Math.min(100, config.soc + Math.max(-0.05, Math.min(0.05, diff * 0.02))));
+  }
+
+  // Persistência
+  localStorage.setItem('atorch_soc', config.soc.toFixed(2));
+  localStorage.setItem('atorch_cah', config.chargeAh.toFixed(3));
+  localStorage.setItem('atorch_dah', config.dischargeAh.toFixed(3));
+
+  // Atualização Visual
+  renderTelemetry(pkt, vCompensated, flow);
+}
+
+function renderTelemetry(p, vComp, flow) {
+  $('socDisplay').textContent = config.soc.toFixed(1);
+  $('voltVal').textContent = p.voltage.toFixed(1) + ' V';
+  $('voltSub').textContent = 'Compensada: ' + vComp.toFixed(2) + ' V';
+  $('currVal').textContent = (flow === 'discharge' ? '-' : flow === 'charge' ? '+' : '') + p.current.toFixed(2) + ' A';
+  $('powVal').textContent = (p.voltage * p.current).toFixed(0) + ' W';
+  $('tempVal').textContent = p.temperature + ' °C';
+  $('vocvLabel').textContent = 'Vocv est: ' + vComp.toFixed(2) + ' V';
+
+  const netAh = (config.chargeAh - config.dischargeAh);
+  $('coulombAh').textContent = (netAh >= 0 ? '+' : '') + netAh.toFixed(2) + ' Ah saldo';
+
+  // Gauge circular
+  const deg = (config.soc / 100) * 270;
+  $('gaugeCircle').style.setProperty('--gauge', deg + 'deg');
+
+  const flowLbl = $('flowLabel');
+  if (flow === 'charge') {
+    flowLbl.textContent = '↑ CARREGANDO';
+    flowLbl.style.color = 'var(--green)';
+    $('gaugeCircle').style.setProperty('--gaugeColor', 'var(--green)');
+    $('statusDetail').textContent = 'Bateria recebendo carga';
+  } else if (flow === 'discharge') {
+    flowLbl.textContent = '↓ DESCARREGANDO';
+    flowLbl.style.color = 'var(--red)';
+    $('gaugeCircle').style.setProperty('--gaugeColor', 'var(--red)');
+    $('statusDetail').textContent = 'Bateria fornecendo energia';
+  } else {
+    flowLbl.textContent = '↔ EM REPOUSO';
+    flowLbl.style.color = 'var(--cyan)';
+    $('gaugeCircle').style.setProperty('--gaugeColor', 'var(--cyan)');
+    $('statusDetail').textContent = 'Bateria estável (sem carga ativa)';
+  }
+
+  // Estimativas de tempo
+  if (flow === 'discharge' && p.current >= 0.2) {
+    const remainingAh = (config.soc / 100) * config.capacity;
+    const hours = remainingAh / p.current;
+    $('autonomyVal').textContent = formatHours(hours);
+    $('chargeTimeVal').textContent = '--:--';
+  } else if (flow === 'charge' && p.current >= 0.2) {
+    const neededAh = ((100 - config.soc) / 100) * config.capacity;
+    const hours = neededAh / p.current;
+    $('chargeTimeVal').textContent = formatHours(hours);
+    $('autonomyVal').textContent = '--:--';
+  } else {
+    $('autonomyVal').textContent = '--:--';
+    $('chargeTimeVal').textContent = '--:--';
+  }
+
+  // Gráfico em tempo real
+  samples.push({ v: p.voltage, i: p.current, t: Date.now() });
+  if (samples.length > 120) samples.shift();
+  $('sampleStats').textContent = samples.length + ' amostras';
+  drawChart();
+}
+
+function formatHours(h) {
+  if (!Number.isFinite(h) || h < 0) return '--:--';
+  const totalMin = Math.round(h * 60);
+  const hrs = Math.floor(totalMin / 60);
+  const mins = totalMin % 60;
+  return String(hrs).padStart(2, '0') + ':' + String(mins).padStart(2, '0');
+}
+
+// Coleta e buffer BLE
+function onCharacteristicValueChanged(event) {
+  const value = event.target.value;
+  const chunk = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  for (let b of chunk) bleRxBuffer.push(b);
+
+  while (bleRxBuffer.length >= 36) {
+    let start = -1;
+    for (let i = 0; i <= bleRxBuffer.length - 3; i++) {
+      if (bleRxBuffer[i] === 0xFF && bleRxBuffer[i + 1] === 0x55 && bleRxBuffer[i + 2] === 0x01) {
+        start = i; break;
+      }
+    }
+    if (start < 0) {
+      bleRxBuffer = bleRxBuffer.slice(-2);
+      break;
+    }
+    if (start > 0) bleRxBuffer = bleRxBuffer.slice(start);
+    if (bleRxBuffer.length < 36) break;
+
+    const frame = bleRxBuffer.slice(0, 36);
+    bleRxBuffer = bleRxBuffer.slice(36);
+
+    if (isValidAtorchPacket(frame)) {
+      const pkt = parsePacket(frame);
+      updateBatteryTelemetry(pkt);
+    }
+  }
+}
+
+// Conexão Web Bluetooth com auto-reconexão
+async function connectBluetooth(selectedDevice = null) {
+  try {
+    $('statusText').textContent = 'Conectando...';
+    $('dot').className = 'dot reconnecting';
+
+    if (!selectedDevice) {
+      selectedDevice = await navigator.bluetooth.requestDevice({
+        filters: [{ services: [SERVICE_UUID] }, { namePrefix: 'DT24' }],
+        optionalServices: [SERVICE_UUID]
+      });
+    }
+
+    device = selectedDevice;
+    device.addEventListener('gattserverdisconnected', onDisconnected);
+
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    characteristic = await service.getCharacteristic(CHAR_UUID);
+    await characteristic.startNotifications();
+    characteristic.addEventListener('characteristicvaluechanged', onCharacteristicValueChanged);
+
+    isConnected = true;
+    $('statusText').textContent = 'Conectado';
+    $('dot').className = 'dot on';
+    $('btnConnect').style.display = 'none';
+
+    // Trava de tela ativa (Wake Lock)
+    if ('wakeLock' in navigator) {
+      try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+    }
+  } catch (err) {
+    console.warn('Erro BLE:', err);
+    $('statusText').textContent = 'Desconectado';
+    $('dot').className = 'dot';
+    scheduleAutoReconnect();
+  }
+}
+
+function onDisconnected() {
+  isConnected = false;
+  $('statusText').textContent = 'Reconectando...';
+  $('dot').className = 'dot reconnecting';
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  scheduleAutoReconnect();
+}
+
+function scheduleAutoReconnect() {
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(async () => {
+    if (device && !isConnected) {
+      try { await connectBluetooth(device); } catch (e) { scheduleAutoReconnect(); }
+    }
+  }, 3000);
+}
+
+// Auto-conectar ao carregar a página se já houver pareamento prévio
+window.addEventListener('DOMContentLoaded', async () => {
+  if (navigator.bluetooth && navigator.bluetooth.getDevices) {
+    const devices = await navigator.bluetooth.getDevices();
+    const dt24 = devices.find(d => d.name && d.name.includes('DT24'));
+    if (dt24) {
+      connectBluetooth(dt24);
+    }
+  }
+});
+
+$('btnConnect').onclick = () => connectBluetooth();
+$('btnDisconnect').onclick = () => {
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+  if (device && device.gatt.connected) device.gatt.disconnect();
+  device = null; isConnected = false;
+  $('statusText').textContent = 'Desconectado';
+  $('dot').className = 'dot';
+  $('btnConnect').style.display = 'flex';
+};
+
+// Gráfico minimalista de alto desempenho
+function drawChart() {
+  const c = $('liveChart'), ctx = c.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = c.getBoundingClientRect();
+  c.width = rect.width * dpr; c.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, rect.width, rect.height);
+
+  if (samples.length < 2) return;
+  const volts = samples.map(s => s.v);
+  let minV = Math.min(...volts) - 0.2, maxV = Math.max(...volts) + 0.2;
+  const w = rect.width, h = rect.height;
+
+  ctx.strokeStyle = '#32e88a';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  samples.forEach((s, i) => {
+    const x = (i / (samples.length - 1)) * w;
+    const y = h - ((s.v - minV) / (maxV - minV)) * h;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
+// Configurações
+$('btnSaveConfig').onclick = () => {
+  config.type = $('batteryType').value;
+  config.capacity = Number($('bankCapacity').value) || 200;
+  config.rInternal = (Number($('internalRes').value) || 12) / 1000;
+  config.cutoffV = Number($('cutoffVoltage').value) || 11.2;
+  localStorage.setItem('atorch_type', config.type);
+  localStorage.setItem('atorch_cap', config.capacity);
+  localStorage.setItem('atorch_ri', (config.rInternal * 1000));
+  localStorage.setItem('atorch_cutoff', config.cutoffV);
+  alert('Parâmetros salvos!');
+};
+
+$('btnSync100').onclick = () => { config.soc = 100; localStorage.setItem('atorch_soc', '100'); alert('SOC calibrado em 100%'); };
+$('btnSync0').onclick   = () => { config.soc = 0;   localStorage.setItem('atorch_soc', '0');   alert('SOC calibrado em 0%'); };
+
+// Banner PWA Install
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  $('installBanner').style.display = 'flex';
+});
+
+$('btnInstallApp').onclick = async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') $('installBanner').style.display = 'none';
+    deferredPrompt = null;
+  }
+};
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

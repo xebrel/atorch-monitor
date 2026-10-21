@@ -1,14 +1,14 @@
 {
-  "name": "ATORCH Monitor",
-  "short_name": "ATORCH",
-  "description": "Monitor ATORCH DT24PW via Web Bluetooth",
+  "name": "ATORCH DT24PW Monitor",
+  "short_name": "ATORCH Pro",
+  "description": "Monitor inteligente de baterias e medidor ATORCH DT24PW",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#061221",
-  "theme_color": "#07111f",
+  "theme_color": "#061221",
   "icons": [
     {
       "src": "icons/icon-192.png",
